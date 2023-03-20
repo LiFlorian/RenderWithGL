@@ -22,12 +22,15 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MainWindow.cpp" />
-    <ClCompile Include="RenderLoop.cpp" />
+    <ClCompile Include="RenderContext.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Data.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="MainWindow.h" />
-    <ClInclude Include="RenderLoop.h" />
+    <ClInclude Include="RenderContext.h" />
+    <ClInclude Include="Shader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -1,11 +1,11 @@
-#include <GLFW/glfw3.h>
+ï»¿#include <GLFW/glfw3.h>
 
 #include "Input.h"
 
-// ¼àÌıÊäÈë
+// ç›‘å¬è¾“å…¥
 void ProcessInput(GLFWwindow* window)
 {
-    // Escape°´Å¥¹Ø±Õ´°¿Ú
+    // EscapeæŒ‰é’®å…³é—­çª—å£
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);

@@ -1,12 +1,13 @@
-#include <GLFW/glfw3.h>
+ï»¿#include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <iostream>
 
 #include "MainWindow.h"
 #include "Input.h"
-#include "RenderLoop.h"
+#include "RenderContext.h"
+#include "Shader.h"
 
-// ´°¿Ú³ß´ç¶¨Òå
+// çª—å£å°ºå¯¸å®šä¹‰
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
@@ -16,45 +17,64 @@ int main()
 
     GLFWwindow* window = CreateWindow();
 
-    // ³õÊ¼»¯glad
+    // åˆå§‹åŒ–glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-    // »æÖÆÑ­»·
+    Shader* CurShader = new Shader("shader/Entry/Triangle_2D.vs", "shader/Entry/Triangle_2D.fs");
+
+    RenderContext* Context = new RenderContext();
+
+    // ç»˜åˆ¶å¾ªç¯
     while (!glfwWindowShouldClose(window))
     {
         ProcessInput(window);
 
-        RenderLoop(window);
+        // æ¸²æŸ“èƒŒæ™¯
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // ä½¿ç”¨ç¼–è¯‘å¥½çš„Shaderç¨‹åº
+        CurShader->Use();
+        glBindVertexArray(Context->VAO);
+
+        // ç»˜åˆ¶çº¿æ¡†æ¨¡å¼, è°ƒè¯•ç”¨
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // ÍË³ö³ÌĞò
+    delete Context;
+
+    // é€€å‡ºç¨‹åº
     glfwTerminate();
     return 0;
 }
 
 
-// ³õÊ¼»¯GLFW
+// åˆå§‹åŒ–GLFW
 void InitGLFW() 
 {
     glfwInit();
 
-    // ÉèÖÃOpenGLÖ§³Ö°æ±¾
+    // è®¾ç½®OpenGLæ”¯æŒç‰ˆæœ¬
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    // Ê¹ÓÃOpenGLºËĞÄÄ£Ê½
+    // ä½¿ç”¨OpenGLæ ¸å¿ƒæ¨¡å¼
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 }
 
 
-// ´´½¨´°¿Ú¶ÔÏó
+// åˆ›å»ºçª—å£å¯¹è±¡
 GLFWwindow* CreateWindow()
 {
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "SoftRendererGL", NULL, NULL);
@@ -66,13 +86,13 @@ GLFWwindow* CreateWindow()
     }
     glfwMakeContextCurrent(window);
 
-    // ÉèÖÃ´°¿Ú´óĞ¡±ä»¯Ê±µÄ»Øµ÷
+    // è®¾ç½®çª—å£å¤§å°å˜åŒ–æ—¶çš„å›è°ƒ
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     return window;
 }
 
-// ´°¿Ú¸Ä±ä»Øµ÷
+// çª—å£æ”¹å˜å›è°ƒ
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);

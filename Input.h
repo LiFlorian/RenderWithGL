@@ -1,5 +1,5 @@
-#pragma once
+ï»¿#pragma once
 #include <GLFW/glfw3.h>
 
-// ½ÓÊÕÓÃ»§ÊäÈë
+// æ¥æ”¶ç”¨æˆ·è¾“å…¥
 void ProcessInput(GLFWwindow* window);

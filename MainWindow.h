@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
@@ -6,7 +6,7 @@ void InitGLFW();
 
 GLFWwindow* CreateWindow();
 
-// ´°¿Ú³ß´ç¸Ä±ä»Øµ÷, ³õÊ¼»¯Ê±Í¬Ñù»áÖ´ĞĞ
+// çª—å£å°ºå¯¸æ”¹å˜å›è°ƒ, åˆå§‹åŒ–æ—¶åŒæ ·ä¼šæ‰§è¡Œ
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 
