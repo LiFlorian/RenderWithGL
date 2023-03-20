@@ -10,11 +10,16 @@ class RenderContext
 {
 public:
 
-	RenderContext();
+	RenderContext(ERenderMode RenderMode, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize);
+	RenderContext(ERenderMode RenderMode, float VertexList[], unsigned int VertexSize);
 
 	~RenderContext();
 
-	void BindVertexData();
+	void SetVertexAttri();
+
+	void SetSimpleTriangleAttri();
+
+	void DrawElements(bool bPolygonMode);
 
 public:
 	unsigned int VAO;
@@ -22,4 +27,6 @@ public:
 	unsigned int VBO;
 
 	unsigned int EBO;
+
+	ERenderMode CurMode;
 };

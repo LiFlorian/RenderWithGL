@@ -6,6 +6,7 @@
 #include "Input.h"
 #include "RenderContext.h"
 #include "Shader.h"
+#include "Data.h"
 
 // 窗口尺寸定义
 const unsigned int SCR_WIDTH = 1920;
@@ -26,7 +27,8 @@ int main()
 
     Shader* CurShader = new Shader("shader/Entry/Triangle_2D.vs", "shader/Entry/Triangle_2D.fs");
 
-    RenderContext* Context = new RenderContext();
+    // RenderContext* Context = new RenderContext(ERenderMode::EBasic_Triangle_2D, Triangle_2D, sizeof(Triangle_2D));
+    RenderContext* Context = new RenderContext(ERenderMode::EBasic_Rectangle_2D, Rectangle_2D, sizeof(Rectangle_2D), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
 
     // 绘制循环
     while (!glfwWindowShouldClose(window))
@@ -39,14 +41,8 @@ int main()
 
         // 使用编译好的Shader程序
         CurShader->Use();
-        glBindVertexArray(Context->VAO);
-
-        // 绘制线框模式, 调试用
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        
+		Context->DrawElements(false);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
