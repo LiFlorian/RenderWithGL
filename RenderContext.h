@@ -4,6 +4,7 @@ enum ERenderMode
 {
 	EBasic_Triangle_2D,
 	EBasic_Rectangle_2D,
+	ETriangle_ColorVert,
 };
 
 class RenderContext
@@ -15,11 +16,13 @@ public:
 
 	~RenderContext();
 
+	void DrawElements(bool bPolygonMode);
+
 	void SetVertexAttri();
 
-	void SetSimpleTriangleAttri();
+	void SetVertexPosAttri();
 
-	void DrawElements(bool bPolygonMode);
+	void SetVertexPosColorAttri();
 
 public:
 	unsigned int VAO;

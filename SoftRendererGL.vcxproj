@@ -32,6 +32,10 @@
     <ClInclude Include="RenderContext.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\Entry\Triangle_2D.fs" />
+    <None Include="shader\Entry\Triangle_2D.vs" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

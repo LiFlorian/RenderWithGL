@@ -53,22 +53,40 @@ void RenderContext::SetVertexAttri()
 	switch (CurMode)
 	{
 	case EBasic_Triangle_2D:
-		SetSimpleTriangleAttri();
+		SetVertexPosAttri();
 		break;
 	case EBasic_Rectangle_2D:
-		SetSimpleTriangleAttri();
+		SetVertexPosAttri();
+		break;
+	case ETriangle_ColorVert:
+		SetVertexPosColorAttri();
 		break;
 	default:
-		SetSimpleTriangleAttri();
+		SetVertexPosAttri();
 		break;
 	}
 }
 
-void RenderContext::SetSimpleTriangleAttri()
+void RenderContext::SetVertexPosAttri()
 {
 	// 设置顶点属性指针
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+}
+
+void RenderContext::SetVertexPosColorAttri()
+{
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// 颜色属性
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -93,6 +111,7 @@ void RenderContext::DrawElements(bool bPolygonMode)
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		break;
 	default:
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		break;
 	}
 

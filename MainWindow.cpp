@@ -28,7 +28,8 @@ int main()
     Shader* CurShader = new Shader("shader/Entry/Triangle_2D.vs", "shader/Entry/Triangle_2D.fs");
 
     // RenderContext* Context = new RenderContext(ERenderMode::EBasic_Triangle_2D, Triangle_2D, sizeof(Triangle_2D));
-    RenderContext* Context = new RenderContext(ERenderMode::EBasic_Rectangle_2D, Rectangle_2D, sizeof(Rectangle_2D), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+    // RenderContext* Context = new RenderContext(ERenderMode::EBasic_Rectangle_2D, Rectangle_2D, sizeof(Rectangle_2D), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	RenderContext* Context = new RenderContext(ERenderMode::ETriangle_ColorVert, Triangle_ColorVert, sizeof(Triangle_ColorVert));
 
     // 绘制循环
     while (!glfwWindowShouldClose(window))
@@ -39,8 +40,8 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // 使用编译好的Shader程序
-        CurShader->Use();
+		// 使用编译好的Shader程序
+		CurShader->Use();
         
 		Context->DrawElements(false);
 
