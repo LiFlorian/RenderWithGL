@@ -5,12 +5,14 @@ enum EVertexType
 	EPos,
 	EPos_Color,
 	EPos_Color_Tex,
+	EPos_Tex,
 };
 
 enum EDrawType
 {
 	ETriangle,
 	ERectangle,
+	ECube,
 };
 
 class RenderContext
@@ -31,6 +33,8 @@ public:
 	void SetVertexPosColorAttri();
 
 	void SetVertexPosColorTexAttri();
+
+	void SetVertexPosTexAttri();
 
 	void ActiveTexture(unsigned int Texture);
 

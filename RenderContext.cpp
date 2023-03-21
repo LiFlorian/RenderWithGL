@@ -58,6 +58,9 @@ void RenderContext::SetVertexAttri(EVertexType VertexType)
 	case EPos_Color_Tex:
 		SetVertexPosColorTexAttri();
 		break;
+	case EPos_Tex:
+		SetVertexPosTexAttri();
+		break;
 	default:
 		SetVertexPosAttri();
 		break;
@@ -109,6 +112,21 @@ void RenderContext::SetVertexPosColorTexAttri()
 	glBindVertexArray(0);
 }
 
+void RenderContext::SetVertexPosTexAttri()
+{
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// 纹理属性
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+}
+
 void RenderContext::ActiveTexture(unsigned int Texture)
 {
 	glActiveTexture(GL_TEXTURE0 + this->TexIndex);
@@ -133,6 +151,9 @@ void RenderContext::DrawElements(bool bPolygonMode, EDrawType DrawType)
 		break;
 	case ERectangle:
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		break;
+	case ECube:
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		break;
 	default:
 		glDrawArrays(GL_TRIANGLES, 0, 3);

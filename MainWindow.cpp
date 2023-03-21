@@ -15,8 +15,8 @@
 
 
 // 窗口尺寸定义
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const float SCR_WIDTH = 1920;
+const float SCR_HEIGHT = 1080;
 
 int main()
 {
@@ -31,24 +31,17 @@ int main()
         return -1;
     }
 
-    Shader* CurShader = new Shader("shader/Entry/Triangle_2D.vs", "shader/Entry/Triangle_2D.fs");
+    Shader* CurShader = new Shader("shader/Entry/Vertex_Base_3D.vs", "shader/Entry/Frag_Base_3D.fs");
 
-    // RenderContext* Context = new RenderContext(EVertexType::EPos, Triangle_2D, sizeof(Triangle_2D));
-	// 
-    // RenderContext* Context = new RenderContext(EVertexType::EPos, Rectangle_2D, sizeof(Rectangle_2D), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
-	// 
-	// RenderContext* Context = new RenderContext(EVertexType::EPos_Color, Triangle_ColorVert, sizeof(Triangle_ColorVert));
-
-	//RenderContext* Context = new RenderContext(EVertexType::EPos_Color_Tex, Rectangle_ColorTexVert, sizeof(Rectangle_ColorTexVert), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
-	//unsigned int Texture1 = LoadTexture("res/textures/awesomeface.png", GL_RGBA);
-
-	RenderContext* Context = new RenderContext(EVertexType::EPos_Color_Tex, Rectangle_ColorTexVert, sizeof(Rectangle_ColorTexVert), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	RenderContext* Context = new RenderContext(EVertexType::EPos_Tex, Cube_TexVert, sizeof(Cube_TexVert));
 	unsigned int Texture1 = LoadTexture("res/textures/container.jpg", GL_RGB);
 	unsigned int Texture2 = LoadTexture("res/textures/awesomeface.png", GL_RGBA, true);
 	CurShader->Use();
 	CurShader->SetInt("texture1", 0);
 	CurShader->SetInt("texture2", 1);
 	CurShader->SetFloat("texMix", 0.2);
+
+	glEnable(GL_DEPTH_TEST); // 开启深度测试
 
     // 绘制循环
     while (!glfwWindowShouldClose(window))
@@ -65,17 +58,30 @@ int main()
 		// 使用编译好的Shader程序
 		CurShader->Use();
 
-		// 计算随时间旋转的矩阵
-		glm::mat4 trans = glm::mat4(1.0f);
-		//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-		//trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		//float scale = sin(glfwGetTime()) * 0.5 + 0.5;
-		//trans = glm::scale(trans, glm::vec3(scale));
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除深度缓冲
 
-		unsigned int transformLoc = glGetUniformLocation(CurShader->ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		// Model矩阵
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+		int modelLoc = glGetUniformLocation(CurShader->ID, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+		// View矩阵
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)); // 摄像机Z轴移动-3
+
+		int viewLoc = glGetUniformLocation(CurShader->ID, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+		// Projection矩阵
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(glm::radians(45.0f), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f); // 45度FOV, 视口长宽比, 近平面0.1, 远屏幕100
+
+		int projectionLoc = glGetUniformLocation(CurShader->ID, "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
         
-		Context->DrawElements(false, EDrawType::ERectangle);
+		Context->DrawElements(false, EDrawType::ECube);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -86,6 +92,60 @@ int main()
     // 退出程序
     glfwTerminate();
     return 0;
+}
+
+// 备份用, 使用时复制到main函数中, 后续抽象重构
+void Base2DGrapheRender(GLFWwindow* window)
+{
+	Shader* CurShader = new Shader("shader/Entry/Triangle_2D.vs", "shader/Entry/Triangle_2D.fs");
+
+	// RenderContext* Context = new RenderContext(EVertexType::EPos, Triangle_2D, sizeof(Triangle_2D));
+	// 
+	// RenderContext* Context = new RenderContext(EVertexType::EPos, Rectangle_2D, sizeof(Rectangle_2D), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	// 
+	// RenderContext* Context = new RenderContext(EVertexType::EPos_Color, Triangle_ColorVert, sizeof(Triangle_ColorVert));
+
+	//RenderContext* Context = new RenderContext(EVertexType::EPos_Color_Tex, Rectangle_ColorTexVert, sizeof(Rectangle_ColorTexVert), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	//unsigned int Texture1 = LoadTexture("res/textures/awesomeface.png", GL_RGBA);
+
+	RenderContext* Context = new RenderContext(EVertexType::EPos_Color_Tex, Rectangle_ColorTexVert, sizeof(Rectangle_ColorTexVert), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	unsigned int Texture1 = LoadTexture("res/textures/container.jpg", GL_RGB);
+	unsigned int Texture2 = LoadTexture("res/textures/awesomeface.png", GL_RGBA, true);
+	CurShader->Use();
+	CurShader->SetInt("texture1", 0);
+	CurShader->SetInt("texture2", 1);
+	CurShader->SetFloat("texMix", 0.2);
+
+	// 绘制循环
+	while (!glfwWindowShouldClose(window))
+	{
+		ProcessInput(window);
+
+		// 渲染背景
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		Context->ActiveTexture(Texture1);
+		Context->ActiveTexture(Texture2);
+
+		// 使用编译好的Shader程序
+		CurShader->Use();
+
+		// 计算随时间旋转的矩阵
+		glm::mat4 trans = glm::mat4(1.0f);
+		//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		//trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		//float scale = sin(glfwGetTime()) * 0.5 + 0.5;
+		//trans = glm::scale(trans, glm::vec3(scale));
+
+		unsigned int transformLoc = glGetUniformLocation(CurShader->ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+		Context->DrawElements(false, EDrawType::ERectangle);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
 }
 
 
