@@ -7,6 +7,7 @@
 #include "RenderContext.h"
 #include "Shader.h"
 #include "Data.h"
+#include "RenderUtil.h"
 
 // 窗口尺寸定义
 const unsigned int SCR_WIDTH = 1920;
@@ -27,9 +28,22 @@ int main()
 
     Shader* CurShader = new Shader("shader/Entry/Triangle_2D.vs", "shader/Entry/Triangle_2D.fs");
 
-    // RenderContext* Context = new RenderContext(ERenderMode::EBasic_Triangle_2D, Triangle_2D, sizeof(Triangle_2D));
-    // RenderContext* Context = new RenderContext(ERenderMode::EBasic_Rectangle_2D, Rectangle_2D, sizeof(Rectangle_2D), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
-	RenderContext* Context = new RenderContext(ERenderMode::ETriangle_ColorVert, Triangle_ColorVert, sizeof(Triangle_ColorVert));
+    // RenderContext* Context = new RenderContext(EVertexType::EPos, Triangle_2D, sizeof(Triangle_2D));
+	// 
+    // RenderContext* Context = new RenderContext(EVertexType::EPos, Rectangle_2D, sizeof(Rectangle_2D), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	// 
+	// RenderContext* Context = new RenderContext(EVertexType::EPos_Color, Triangle_ColorVert, sizeof(Triangle_ColorVert));
+
+	//RenderContext* Context = new RenderContext(EVertexType::EPos_Color_Tex, Rectangle_ColorTexVert, sizeof(Rectangle_ColorTexVert), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	//unsigned int Texture1 = LoadTexture("res/textures/awesomeface.png", GL_RGBA);
+
+	RenderContext* Context = new RenderContext(EVertexType::EPos_Color_Tex, Rectangle_ColorTexVert, sizeof(Rectangle_ColorTexVert), Rectangle_2D_Indices, sizeof(Rectangle_2D_Indices));
+	unsigned int Texture1 = LoadTexture("res/textures/container.jpg", GL_RGB);
+	unsigned int Texture2 = LoadTexture("res/textures/awesomeface.png", GL_RGBA, true);
+	CurShader->Use();
+	CurShader->SetInt("texture1", 0);
+	CurShader->SetInt("texture2", 1);
+	CurShader->SetFloat("texMix", 1);
 
     // 绘制循环
     while (!glfwWindowShouldClose(window))
@@ -40,10 +54,13 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+		Context->ActiveTexture(Texture1);
+		Context->ActiveTexture(Texture2);
+
 		// 使用编译好的Shader程序
 		CurShader->Use();
         
-		Context->DrawElements(false);
+		Context->DrawElements(false, EDrawType::ERectangle);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

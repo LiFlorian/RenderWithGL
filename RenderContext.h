@@ -1,28 +1,39 @@
 ﻿#pragma once
 
-enum ERenderMode
+enum EVertexType
 {
-	EBasic_Triangle_2D,
-	EBasic_Rectangle_2D,
-	ETriangle_ColorVert,
+	EPos,
+	EPos_Color,
+	EPos_Color_Tex,
+};
+
+enum EDrawType
+{
+	ETriangle,
+	ERectangle,
 };
 
 class RenderContext
 {
 public:
 
-	RenderContext(ERenderMode RenderMode, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize);
-	RenderContext(ERenderMode RenderMode, float VertexList[], unsigned int VertexSize);
+	RenderContext(EVertexType InVertexType, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize);
+	RenderContext(EVertexType InVertexType, float VertexList[], unsigned int VertexSize);
 
 	~RenderContext();
 
-	void DrawElements(bool bPolygonMode);
+	void DrawElements(bool bPolygonMode, EDrawType DrawType);
 
-	void SetVertexAttri();
+	void SetVertexAttri(EVertexType VertexType);
 
 	void SetVertexPosAttri();
 
 	void SetVertexPosColorAttri();
+
+	void SetVertexPosColorTexAttri();
+
+	void ActiveTexture(unsigned int Texture);
+
 
 public:
 	unsigned int VAO;
@@ -31,5 +42,5 @@ public:
 
 	unsigned int EBO;
 
-	ERenderMode CurMode;
+	unsigned int TexIndex = 0;
 };

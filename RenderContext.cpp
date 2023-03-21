@@ -3,11 +3,10 @@
 #include <iostream>
 
 #include "RenderContext.h"
+#include "stb_image.h"
 
-RenderContext::RenderContext(ERenderMode RenderMode, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize)
+RenderContext::RenderContext(EVertexType VertexType, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize)
 {
-	CurMode = RenderMode;
-
 	// 创建VAO并绑定
 	glGenVertexArrays(1, &this->VAO);
 	glBindVertexArray(this->VAO);
@@ -22,13 +21,11 @@ RenderContext::RenderContext(ERenderMode RenderMode, float VertexList[], unsigne
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndicesSize, IndicesList, GL_STATIC_DRAW);
 
-	SetVertexAttri();
+	SetVertexAttri(VertexType);
 }
 
-RenderContext::RenderContext(ERenderMode RenderMode, float VertexList[], unsigned int VertexSize)
+RenderContext::RenderContext(EVertexType VertexType, float VertexList[], unsigned int VertexSize)
 {
-	CurMode = RenderMode;
-
 	// 创建VAO并绑定
 	glGenVertexArrays(1, &this->VAO);
 	glBindVertexArray(this->VAO);
@@ -38,7 +35,7 @@ RenderContext::RenderContext(ERenderMode RenderMode, float VertexList[], unsigne
 	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
 	glBufferData(GL_ARRAY_BUFFER, VertexSize, VertexList, GL_STATIC_DRAW);
 
-	SetVertexAttri();
+	SetVertexAttri(VertexType);
 }
 
 RenderContext::~RenderContext()
@@ -48,18 +45,18 @@ RenderContext::~RenderContext()
 	glDeleteBuffers(1, &this->EBO);
 }
 
-void RenderContext::SetVertexAttri()
+void RenderContext::SetVertexAttri(EVertexType VertexType)
 {
-	switch (CurMode)
+	switch (VertexType)
 	{
-	case EBasic_Triangle_2D:
+	case EPos:
 		SetVertexPosAttri();
 		break;
-	case EBasic_Rectangle_2D:
-		SetVertexPosAttri();
-		break;
-	case ETriangle_ColorVert:
+	case EPos_Color:
 		SetVertexPosColorAttri();
+		break;
+	case EPos_Color_Tex:
+		SetVertexPosColorTexAttri();
 		break;
 	default:
 		SetVertexPosAttri();
@@ -93,7 +90,34 @@ void RenderContext::SetVertexPosColorAttri()
 	glBindVertexArray(0);
 }
 
-void RenderContext::DrawElements(bool bPolygonMode)
+void RenderContext::SetVertexPosColorTexAttri()
+{
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// 颜色属性
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	// 纹理属性
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+}
+
+void RenderContext::ActiveTexture(unsigned int Texture)
+{
+	glActiveTexture(GL_TEXTURE0 + this->TexIndex);
+	glBindTexture(GL_TEXTURE_2D, Texture);
+
+	this->TexIndex += 1;
+}
+
+void RenderContext::DrawElements(bool bPolygonMode, EDrawType DrawType)
 {	
 	glBindVertexArray(this->VAO);
 
@@ -102,12 +126,12 @@ void RenderContext::DrawElements(bool bPolygonMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 
-	switch (CurMode)
+	switch (DrawType)
 	{
-	case EBasic_Triangle_2D:
+	case ETriangle:
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		break;
-	case EBasic_Rectangle_2D:
+	case ERectangle:
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		break;
 	default:
