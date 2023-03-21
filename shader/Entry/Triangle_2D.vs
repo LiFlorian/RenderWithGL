@@ -7,9 +7,11 @@ layout (location = 2) in vec2 aTexCoord; // 纹理坐标
 out vec3 vertexColor; // 为片段着色器指定一个颜色输出
 out vec2 texCoord;
 
+uniform mat4 transform;
+
 void main()
 {
-    gl_Position = vec4(aPos, 1.0);
+    gl_Position = transform * vec4(aPos, 1.0);
 
 	vertexColor = aColor;
     texCoord = aTexCoord;

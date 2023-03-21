@@ -2,12 +2,17 @@
 #include <glad/glad.h>
 #include <iostream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "MainWindow.h"
 #include "Input.h"
 #include "RenderContext.h"
 #include "Shader.h"
 #include "Data.h"
 #include "RenderUtil.h"
+
 
 // 窗口尺寸定义
 const unsigned int SCR_WIDTH = 1920;
@@ -43,7 +48,7 @@ int main()
 	CurShader->Use();
 	CurShader->SetInt("texture1", 0);
 	CurShader->SetInt("texture2", 1);
-	CurShader->SetFloat("texMix", 1);
+	CurShader->SetFloat("texMix", 0.2);
 
     // 绘制循环
     while (!glfwWindowShouldClose(window))
@@ -59,6 +64,16 @@ int main()
 
 		// 使用编译好的Shader程序
 		CurShader->Use();
+
+		// 计算随时间旋转的矩阵
+		glm::mat4 trans = glm::mat4(1.0f);
+		//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		//trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		//float scale = sin(glfwGetTime()) * 0.5 + 0.5;
+		//trans = glm::scale(trans, glm::vec3(scale));
+
+		unsigned int transformLoc = glGetUniformLocation(CurShader->ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
         
 		Context->DrawElements(false, EDrawType::ERectangle);
 
