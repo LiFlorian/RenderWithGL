@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include<iostream>
+#include <vector>
+
 #include "Shader.h"
 
 enum EVertexType
@@ -9,6 +12,7 @@ enum EVertexType
 	EPos_Color_Tex,
 	EPos_Tex,
 	EPos_Normal,
+	EPos_Normal_Tex,
 };
 
 enum EDrawType
@@ -41,7 +45,11 @@ public:
 
 	void SetVertexPosNormalAttri();
 
-	void ActiveTexture(unsigned int Texture);
+	void SetVertexPosNormalTexAttri();
+
+	void BindTexture(unsigned int Texture);
+
+	void ActiveBindedTextures();
 
 	void SetVertexTransform(glm::mat4 view, glm::mat4 projection);
 
@@ -53,7 +61,7 @@ public:
 
 	unsigned int EBO;
 
-	unsigned int TexIndex = 0;
+	std::vector<unsigned int> TexList;
 
 	Shader* CurShader;
 };

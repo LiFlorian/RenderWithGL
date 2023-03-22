@@ -71,6 +71,9 @@ void RenderContext::SetVertexAttri(EVertexType VertexType)
 	case EPos_Normal:
 		SetVertexPosNormalAttri();
 		break;
+	case EPos_Normal_Tex:
+		SetVertexPosNormalTexAttri();
+		break;
 	default:
 		SetVertexPosAttri();
 		break;
@@ -152,12 +155,38 @@ void RenderContext::SetVertexPosNormalAttri()
 	glBindVertexArray(0);
 }
 
-void RenderContext::ActiveTexture(unsigned int Texture)
+void RenderContext::SetVertexPosNormalTexAttri()
 {
-	glActiveTexture(GL_TEXTURE0 + this->TexIndex);
-	glBindTexture(GL_TEXTURE_2D, Texture);
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
-	this->TexIndex += 1;
+	// 法线属性
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	// 纹理属性
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+}
+
+void RenderContext::BindTexture(unsigned int Texture)
+{
+	TexList.push_back(Texture);
+}
+
+void RenderContext::ActiveBindedTextures()
+{
+	int ListNum = TexList.size();
+	for (int i = 0; i < ListNum; i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, TexList.at(i));
+	}
 }
 
 void RenderContext::SetVertexTransform(glm::mat4 view, glm::mat4 projection)

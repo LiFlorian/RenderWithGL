@@ -1,2 +1,2 @@
 ﻿#pragma once
-unsigned int LoadTexture(const char* ImagePath, int ColorMode, bool bFlip = false);
+unsigned int LoadTexture(const char* ImagePath, bool bFlip = false);

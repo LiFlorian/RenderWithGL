@@ -6,7 +6,7 @@
 #include "stb_image.h"
 
 
-unsigned int LoadTexture(const char* ImagePath, int ColorMode, bool bFlip)
+unsigned int LoadTexture(const char* ImagePath, bool bFlip)
 {
 	if (bFlip) {
 		stbi_set_flip_vertically_on_load(true);
@@ -25,13 +25,20 @@ unsigned int LoadTexture(const char* ImagePath, int ColorMode, bool bFlip)
 	// 为当前纹理设置mipmap过滤
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+	
+	GLenum format;
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load(ImagePath, &width, &height, &nrChannels, 0);
+	if (nrChannels == 1)
+		format = GL_RED;
+	else if (nrChannels == 3)
+		format = GL_RGB;
+	else if (nrChannels == 4)
+		format = GL_RGBA;
 
 	if (data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, ColorMode, width, height, 0, ColorMode, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else

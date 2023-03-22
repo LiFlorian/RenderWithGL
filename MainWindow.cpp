@@ -53,17 +53,20 @@ int main()
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
 	// 物体绘制所需Shader以及Context
-    Shader* ContextShader = new Shader("shader/Light/Phong.vs", "shader/Light/Phong.fs");
-	RenderContext* Context = new RenderContext(ContextShader, EVertexType::EPos_Normal, Cube_NormalVert, sizeof(Cube_NormalVert));
+    Shader* ContextShader = new Shader("shader/Light/Phong_TextureMap.vs", "shader/Light/Phong_TextureMap.fs");
+	RenderContext* Context = new RenderContext(ContextShader, EVertexType::EPos_Normal_Tex, Cube_NormalTexVert, sizeof(Cube_NormalTexVert));
 	ContextShader->Use();
 	ContextShader->SetVec3("LightPos", LightPos);
-	ContextShader->SetVec3("material.ambientColor", glm::vec3(1.0f, 0.5f, 0.31f));
-	ContextShader->SetVec3("material.diffuseColor", glm::vec3(1.0f, 0.5f, 0.31f));
-	ContextShader->SetVec3("material.specularColor", glm::vec3(0.5f, 0.5f, 0.5f));
-	ContextShader->SetFloat("material.shininess", 32.0f);
 	ContextShader->SetVec3("lightMat.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
 	ContextShader->SetVec3("lightMat.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
 	ContextShader->SetVec3("lightMat.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ContextShader->SetFloat("material.shininess", 32.0f);
+	unsigned int DiffuseMap = LoadTexture("res/map/container_diffuseMap.png");
+	ContextShader->SetInt("material.diffuseMap", 0);
+	Context->BindTexture(DiffuseMap);
+	unsigned int SpecularMap = LoadTexture("res/map/container2_specularMap.png");
+	ContextShader->SetInt("material.specularMap", 1);
+	Context->BindTexture(SpecularMap);
 
 	// 光源绘制所需的Shader及Obj
 	Shader* LightShader = new Shader("shader/Light/Light_Base.vs", "shader/Light/Light_Base.fs");
@@ -102,6 +105,7 @@ int main()
 		ContextShader->Use();
 		ContextShader->SetVec3("ViewPos", CurCamera->Pos);
 		Context->SetVertexTransform(view, projection);
+		Context->ActiveBindedTextures();
 		Context->DrawElements(false, EDrawType::ECube);
 
 		// 绘制光源
