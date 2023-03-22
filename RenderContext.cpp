@@ -68,6 +68,9 @@ void RenderContext::SetVertexAttri(EVertexType VertexType)
 	case EPos_Tex:
 		SetVertexPosTexAttri();
 		break;
+	case EPos_Normal:
+		SetVertexPosNormalAttri();
+		break;
 	default:
 		SetVertexPosAttri();
 		break;
@@ -127,6 +130,21 @@ void RenderContext::SetVertexPosTexAttri()
 
 	// 纹理属性
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+}
+
+void RenderContext::SetVertexPosNormalAttri()
+{
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// 法线属性
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

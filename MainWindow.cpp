@@ -49,18 +49,21 @@ int main()
 
 	// 定义颜色
 	glm::vec3 LightColor = glm::vec3(1.0);
-	glm::vec3 ObjColor = glm::vec3(1.0f, 0.5f, 0.31f);
+	glm::vec3 MatColor = glm::vec3(1.0f, 0.5f, 0.31f);
+
+	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
 	// 物体绘制所需Shader以及Context
     Shader* ContextShader = new Shader("shader/Light/Obj.vs", "shader/Light/Obj.fs");
-	RenderContext* Context = new RenderContext(ContextShader, EVertexType::EPos_Tex, Cube_TexVert, sizeof(Cube_TexVert));
+	RenderContext* Context = new RenderContext(ContextShader, EVertexType::EPos_Normal, Cube_NormalVert, sizeof(Cube_NormalVert));
 	ContextShader->Use();
+	ContextShader->SetVec3("LightPos", LightPos);
 	ContextShader->SetVec3("LightColor", LightColor);
-	ContextShader->SetVec3("MatColor", ObjColor);
+	ContextShader->SetVec3("MatColor", MatColor);
 
 	// 光源绘制所需的Shader及Obj
 	Shader* LightShader = new Shader("shader/Light/Light_Base.vs", "shader/Light/Light_Base.fs");
-	Light* OneLight = new Light(LightShader, glm::vec3(1.2f, 1.0f, 2.0f));
+	Light* OneLight = new Light(LightShader, LightPos);
 	OneLight->BindBufferData(Context->VBO); // 都是正方体, 先用Context的VBO绑定自己的VAO
 
 	glEnable(GL_DEPTH_TEST); // 开启深度测试

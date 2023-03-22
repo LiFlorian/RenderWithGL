@@ -8,6 +8,7 @@ enum EVertexType
 	EPos_Color,
 	EPos_Color_Tex,
 	EPos_Tex,
+	EPos_Normal,
 };
 
 enum EDrawType
@@ -37,6 +38,8 @@ public:
 	void SetVertexPosColorTexAttri();
 
 	void SetVertexPosTexAttri();
+
+	void SetVertexPosNormalAttri();
 
 	void ActiveTexture(unsigned int Texture);
 
