@@ -51,7 +51,7 @@ public:
 
 	void ActiveBindedTextures();
 
-	void SetVertexTransform(glm::mat4 view, glm::mat4 projection);
+	void SetVertexTransform(glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
 
 public:

@@ -47,19 +47,32 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback); // 鼠标滑动回调
 	glfwSetScrollCallback(window, scroll_callback); // 鼠标滚轮回调
 
-	// 定义颜色
-	glm::vec3 LightColor = glm::vec3(1.0);
-
+	// 定义常数
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
 	// 物体绘制所需Shader以及Context
     Shader* ContextShader = new Shader("shader/Light/Phong_TextureMap.vs", "shader/Light/Phong_TextureMap.fs");
 	RenderContext* Context = new RenderContext(ContextShader, EVertexType::EPos_Normal_Tex, Cube_NormalTexVert, sizeof(Cube_NormalTexVert));
 	ContextShader->Use();
-	ContextShader->SetVec3("LightPos", LightPos);
-	ContextShader->SetVec3("lightMat.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-	ContextShader->SetVec3("lightMat.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ContextShader->SetVec3("lightMat.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	// 平行光参数
+	ContextShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	ContextShader->SetVec3("paraLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+	ContextShader->SetVec3("paraLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ContextShader->SetVec3("paraLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	// 点光源静态参数
+	ContextShader->SetVec3("pointLight.position", LightPos);
+	ContextShader->SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+	ContextShader->SetVec3("pointLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ContextShader->SetVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ContextShader->SetFloat("pointLight.constant", 1.0f);
+	ContextShader->SetFloat("pointLight.linear", 0.09f);
+	ContextShader->SetFloat("pointLight.quadratic", 0.032f);
+	// 投射光静态参数
+	ContextShader->SetVec3("spotLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ContextShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ContextShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
+	ContextShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+	
 	ContextShader->SetFloat("material.shininess", 32.0f);
 	unsigned int DiffuseMap = LoadTexture("res/map/container_diffuseMap.png");
 	ContextShader->SetInt("material.diffuseMap", 0);
@@ -104,9 +117,21 @@ int main()
 		// 绘制Context内容
 		ContextShader->Use();
 		ContextShader->SetVec3("ViewPos", CurCamera->Pos);
-		Context->SetVertexTransform(view, projection);
+		ContextShader->SetVec3("spotLight.position", CurCamera->Pos);
+		ContextShader->SetVec3("spotLight.direction", CurCamera->Front);
 		Context->ActiveBindedTextures();
-		Context->DrawElements(false, EDrawType::ECube);
+
+		for (int i = 1; i < 10; i++)
+		{
+			// Model矩阵
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+
+			Context->SetVertexTransform(model, view, projection);
+			Context->DrawElements(false, EDrawType::ECube);
+		}
 
 		// 绘制光源
 		LightShader->Use();
