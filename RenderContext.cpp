@@ -164,7 +164,8 @@ void RenderContext::SetVertexTransform(glm::mat4 view, glm::mat4 projection)
 {
 	// Model矩阵
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+	//model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0.5f, 1.0f, 0.0f));
 
 	int modelLoc = glGetUniformLocation(CurShader->ID, "model");
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));

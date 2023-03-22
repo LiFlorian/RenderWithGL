@@ -49,17 +49,21 @@ int main()
 
 	// 定义颜色
 	glm::vec3 LightColor = glm::vec3(1.0);
-	glm::vec3 MatColor = glm::vec3(1.0f, 0.5f, 0.31f);
 
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
 	// 物体绘制所需Shader以及Context
-    Shader* ContextShader = new Shader("shader/Light/Obj.vs", "shader/Light/Obj.fs");
+    Shader* ContextShader = new Shader("shader/Light/Phong.vs", "shader/Light/Phong.fs");
 	RenderContext* Context = new RenderContext(ContextShader, EVertexType::EPos_Normal, Cube_NormalVert, sizeof(Cube_NormalVert));
 	ContextShader->Use();
 	ContextShader->SetVec3("LightPos", LightPos);
-	ContextShader->SetVec3("LightColor", LightColor);
-	ContextShader->SetVec3("MatColor", MatColor);
+	ContextShader->SetVec3("material.ambientColor", glm::vec3(1.0f, 0.5f, 0.31f));
+	ContextShader->SetVec3("material.diffuseColor", glm::vec3(1.0f, 0.5f, 0.31f));
+	ContextShader->SetVec3("material.specularColor", glm::vec3(0.5f, 0.5f, 0.5f));
+	ContextShader->SetFloat("material.shininess", 32.0f);
+	ContextShader->SetVec3("lightMat.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+	ContextShader->SetVec3("lightMat.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ContextShader->SetVec3("lightMat.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// 光源绘制所需的Shader及Obj
 	Shader* LightShader = new Shader("shader/Light/Light_Base.vs", "shader/Light/Light_Base.fs");
@@ -96,6 +100,7 @@ int main()
 
 		// 绘制Context内容
 		ContextShader->Use();
+		ContextShader->SetVec3("ViewPos", CurCamera->Pos);
 		Context->SetVertexTransform(view, projection);
 		Context->DrawElements(false, EDrawType::ECube);
 
