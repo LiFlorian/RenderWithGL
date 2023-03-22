@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "Shader.h"
+
 enum EVertexType
 {
 	EPos,
@@ -19,8 +21,8 @@ class RenderContext
 {
 public:
 
-	RenderContext(EVertexType InVertexType, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize);
-	RenderContext(EVertexType InVertexType, float VertexList[], unsigned int VertexSize);
+	RenderContext(Shader* contextShader, EVertexType InVertexType, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize);
+	RenderContext(Shader* contextShader, EVertexType InVertexType, float VertexList[], unsigned int VertexSize);
 
 	~RenderContext();
 
@@ -38,6 +40,8 @@ public:
 
 	void ActiveTexture(unsigned int Texture);
 
+	void SetVertexTransform(glm::mat4 view, glm::mat4 projection);
+
 
 public:
 	unsigned int VAO;
@@ -47,4 +51,6 @@ public:
 	unsigned int EBO;
 
 	unsigned int TexIndex = 0;
+
+	Shader* CurShader;
 };

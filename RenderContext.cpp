@@ -1,12 +1,17 @@
 ﻿#include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "RenderContext.h"
 #include "stb_image.h"
 
-RenderContext::RenderContext(EVertexType VertexType, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize)
+RenderContext::RenderContext(Shader* ContextShader, EVertexType VertexType, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize)
 {
+	CurShader = ContextShader;
+
 	// 创建VAO并绑定
 	glGenVertexArrays(1, &this->VAO);
 	glBindVertexArray(this->VAO);
@@ -24,8 +29,10 @@ RenderContext::RenderContext(EVertexType VertexType, float VertexList[], unsigne
 	SetVertexAttri(VertexType);
 }
 
-RenderContext::RenderContext(EVertexType VertexType, float VertexList[], unsigned int VertexSize)
+RenderContext::RenderContext(Shader* ContextShader, EVertexType VertexType, float VertexList[], unsigned int VertexSize)
 {
+	CurShader = ContextShader;
+
 	// 创建VAO并绑定
 	glGenVertexArrays(1, &this->VAO);
 	glBindVertexArray(this->VAO);
@@ -133,6 +140,24 @@ void RenderContext::ActiveTexture(unsigned int Texture)
 	glBindTexture(GL_TEXTURE_2D, Texture);
 
 	this->TexIndex += 1;
+}
+
+void RenderContext::SetVertexTransform(glm::mat4 view, glm::mat4 projection)
+{
+	// Model矩阵
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+	int modelLoc = glGetUniformLocation(CurShader->ID, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+	// View矩阵
+	int viewLoc = glGetUniformLocation(CurShader->ID, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+	// Projection矩阵
+	int projectionLoc = glGetUniformLocation(CurShader->ID, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 }
 
 void RenderContext::DrawElements(bool bPolygonMode, EDrawType DrawType)
