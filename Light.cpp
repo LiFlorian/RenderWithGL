@@ -1,6 +1,6 @@
 ﻿#include "Light.h"
 
-Light::Light(Shader* InLightShader, glm::vec3 InPos, glm::vec3 InColor)
+Light::Light(Shader* InLightShader, float VertexList[], unsigned int VertexSize, glm::vec3 InPos, glm::vec3 InColor)
 {
 	CurShader = InLightShader;
 	Pos = InPos;
@@ -8,23 +8,23 @@ Light::Light(Shader* InLightShader, glm::vec3 InPos, glm::vec3 InColor)
 
 	CurShader->Use();
 	CurShader->SetVec3("LightColor", Color);
+
+	// 创建VAO并绑定
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	// 创建VBO并把顶点数组复制到缓冲中供OpenGL使用
+	glGenBuffers(1, &this->VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+	glBufferData(GL_ARRAY_BUFFER, VertexSize, VertexList, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 }
 
 Light::~Light()
 {
 	glDeleteVertexArrays(1, &VAO);
-}
-
-void Light::BindBufferData(unsigned int VBO)
-{
-	// 创建VAO并绑定
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
 }
 
 void Light::Draw(glm::mat4 view, glm::mat4 projection)

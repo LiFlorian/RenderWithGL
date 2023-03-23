@@ -17,6 +17,7 @@
 #include "RenderUtil.h"
 #include "Camera.h"
 #include "Light.h"
+#include "ModelRender.h"
 
 
 // 窗口尺寸定义
@@ -54,9 +55,15 @@ int main()
 	// 定义常数
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
-	// 物体绘制所需Shader以及Context
+	// 光源绘制所需的Shader及Obj
+	Shader* LightShader = new Shader("shader/Light/Light_Base.vs", "shader/Light/Light_Base.fs");
+	Light* OneLight = new Light(LightShader, Cube_NormalTexVert, sizeof(Cube_NormalTexVert), LightPos);
+
+	// 创建模型
+	ModelRender* model = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
+
+	// 模型绘制所需Shader以及Context
     Shader* ContextShader = new Shader("shader/Light/Phong_TextureMap.vs", "shader/Light/Phong_TextureMap.fs");
-	RenderContext* Context = new RenderContext(ContextShader, EVertexType::EPos_Normal_Tex, Cube_NormalTexVert, sizeof(Cube_NormalTexVert));
 	ContextShader->Use();
 	// 平行光参数
 	ContextShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
@@ -77,18 +84,8 @@ int main()
 	ContextShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
 	ContextShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 	
+	// 光泽度
 	ContextShader->SetFloat("material.shininess", 32.0f);
-	unsigned int DiffuseMap = LoadTexture("res/map/container_diffuseMap.png");
-	ContextShader->SetInt("material.diffuseMap", 0);
-	Context->BindTexture(DiffuseMap);
-	unsigned int SpecularMap = LoadTexture("res/map/container2_specularMap.png");
-	ContextShader->SetInt("material.specularMap", 1);
-	Context->BindTexture(SpecularMap);
-
-	// 光源绘制所需的Shader及Obj
-	Shader* LightShader = new Shader("shader/Light/Light_Base.vs", "shader/Light/Light_Base.fs");
-	Light* OneLight = new Light(LightShader, LightPos);
-	OneLight->BindBufferData(Context->VBO); // 都是正方体, 先用Context的VBO绑定自己的VAO
 
 	glEnable(GL_DEPTH_TEST); // 开启深度测试
 
@@ -112,40 +109,33 @@ int main()
 		processInput(deltaTime, window);
 
 		// Projection矩阵
-		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(CurCamera->Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f); // 45度FOV, 视口长宽比, 近平面0.1, 远屏幕100
+		glm::mat4 projectionMatrix = glm::mat4(1.0f);
+		projectionMatrix = glm::perspective(glm::radians(CurCamera->Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f); // 45度FOV, 视口长宽比, 近平面0.1, 远屏幕100
 
 		// View矩阵
-		glm::mat4 view = CurCamera->LookAt();
+		glm::mat4 viewMatrix = CurCamera->LookAt();
 
-		// 绘制Context内容
+		// 绘制光源
+		LightShader->Use();
+		OneLight->Draw(viewMatrix, projectionMatrix);
+
+		// 设置模型shader的动态参数
 		ContextShader->Use();
 		ContextShader->SetVec3("ViewPos", CurCamera->Pos);
 		ContextShader->SetVec3("spotLight.position", CurCamera->Pos);
 		ContextShader->SetVec3("spotLight.direction", CurCamera->Front);
-		Context->ActiveBindedTextures();
 
-		for (int i = 1; i < 10; i++)
-		{
-			// Model矩阵
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+		// Model矩阵
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::translate(modelMatrix, cubePositions[0]);
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f));
 
-			Context->SetVertexTransform(model, view, projection);
-			Context->DrawElements(false, EDrawType::ECube);
-		}
-
-		// 绘制光源
-		LightShader->Use();
-		OneLight->Draw(view, projection);
+		// 绘制模型
+		model->Draw(ContextShader, modelMatrix, viewMatrix, projectionMatrix);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    delete Context;
 
     // 退出程序
     glfwTerminate();

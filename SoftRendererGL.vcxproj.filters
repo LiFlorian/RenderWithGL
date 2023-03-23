@@ -42,6 +42,12 @@
     <ClCompile Include="Light.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="MeshRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainWindow.h">
@@ -66,6 +72,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
