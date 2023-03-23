@@ -1,4 +1,5 @@
 ﻿#include "MeshRender.h"
+#include "../render/RenderUtil.h"
 
 MeshRender::MeshRender(float VertexList[], unsigned int VertexSize)
 {
@@ -125,5 +126,10 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 	}
 
 	glBindVertexArray(0);
+}
+
+void MeshRender::SetCustomTexture(char* path)
+{
+	
 }
 

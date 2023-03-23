@@ -65,8 +65,11 @@ int main()
 	// 模型Obj
 	ModelRender* Model = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
 
+	// 平面
+	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
+
 	// 模型Shader及静态参数
-	Shader* ModelShader = new Shader("shader/Light/Phong_TextureMap.vs", "shader/Light/Phong_TextureMap.fs");
+	Shader* ModelShader = new Shader("shader/Model/Model.vs", "shader/Model/Model.fs");
 	ModelShader->Use();
 	// 平行光参数
 	ModelShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
@@ -141,6 +144,12 @@ int main()
 
 		// 绘制模型
 		Model->Draw(ModelShader, modelMatrix, viewMatrix, projectionMatrix);
+
+		// Plan Model矩阵
+		glm::mat4 modelMatrixFloor = glm::mat4(1.0f);
+
+		// 绘制Plan
+		Plan->Draw(ModelShader, modelMatrixFloor, viewMatrix, projectionMatrix);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

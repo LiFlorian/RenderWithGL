@@ -48,6 +48,8 @@ public:
 	MeshRender(vector<Vertex> InVertices, vector<unsigned int> InIndices, vector<Texture> InTextures);
 
 	void Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection);
+
+	void SetCustomTexture(char* path);
 private:
 	
 	unsigned int VAO, VBO, EBO;
