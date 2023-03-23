@@ -21,7 +21,7 @@
     <ClCompile Include="src\tool\glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\RenderContext.cpp">
+    <ClCompile Include="src\backup\RenderContext.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\render\Shader.cpp">
@@ -30,22 +30,22 @@
     <ClCompile Include="src\tool\stb_image_wrap.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\RenderUtil.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\obj\Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Backup.cpp">
+    <ClCompile Include="src\backup\Backup.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\obj\Light.cpp">
+    <ClCompile Include="src\backup\Light.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\render\MeshRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\render\ModelRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\RenderUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="src\Data.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\render\RenderContext.h">
+    <ClInclude Include="src\backup\RenderContext.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\render\Shader.h">
@@ -71,7 +71,7 @@
     <ClInclude Include="src\obj\Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\obj\Light.h">
+    <ClInclude Include="src\backup\Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\render\MeshRender.h">

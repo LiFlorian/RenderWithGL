@@ -26,23 +26,32 @@ struct Texture {
 	aiString path;
 };
 
+
 class MeshRender
 {
 public:
-	/*  网格数据  */
+	
 	vector<Vertex> vertices;
 
 	vector<unsigned int> indices;
 
 	vector<Texture> textures;
-	/*  函数  */
-	MeshRender(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+
+public:
+
+	MeshRender(float VertexList[], unsigned int VertexSize);
+
+	MeshRender(vector<Vertex> InVertices);
+
+	MeshRender(vector<Vertex> InVertices, vector<unsigned int> InIndices);
+	
+	MeshRender(vector<Vertex> InVertices, vector<unsigned int> InIndices, vector<Texture> InTextures);
 
 	void Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 private:
-	/*  渲染数据  */
+	
 	unsigned int VAO, VBO, EBO;
-	/*  函数  */
+	
 	void SetupMesh();
 };
 

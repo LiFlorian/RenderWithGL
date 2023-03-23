@@ -1,5 +1,43 @@
 ﻿#include "MeshRender.h"
 
+MeshRender::MeshRender(float VertexList[], unsigned int VertexSize)
+{
+	for (int i = 0; i < VertexSize; i++)
+	{
+		Vertex vertex;
+
+		vertex.Position.x = VertexList[i++];
+		vertex.Position.y = VertexList[i++];
+		vertex.Position.z = VertexList[i++];
+
+		vertex.Normal.x = VertexList[i++];
+		vertex.Normal.y = VertexList[i++];
+		vertex.Normal.z = VertexList[i++];
+
+		vertex.TexCoord.x = VertexList[i++];
+		vertex.TexCoord.y = VertexList[i];
+
+		vertices.push_back(vertex);
+	}
+
+	SetupMesh();
+}
+
+MeshRender::MeshRender(vector<Vertex> InVertices)
+{
+	vertices = InVertices;
+
+	SetupMesh();
+}
+
+MeshRender::MeshRender(vector<Vertex> InVertices, vector<unsigned int> InIndices)
+{
+	vertices = InVertices;
+	indices = InIndices;
+
+	SetupMesh();
+}
+
 MeshRender::MeshRender(vector<Vertex> InVertices, vector<unsigned int> InIndices, vector<Texture> InTextures)
 {
 	vertices = InVertices;
@@ -11,17 +49,21 @@ MeshRender::MeshRender(vector<Vertex> InVertices, vector<unsigned int> InIndices
 
 void MeshRender::SetupMesh()
 {
+	// 绑定VAO
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-
 	glBindVertexArray(VAO);
 
+	// 绑定VBO
+	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+	// 如果有, 则绑定EBO
+	if (!indices.empty()) {
+		glGenBuffers(1, &EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+	}
 
 	// 顶点位置
 	glEnableVertexAttribArray(0);
@@ -71,7 +113,17 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 
 	// 绘制网格
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+	// 根据有无EBO选择不同的绘制方式
+	if (!indices.empty())
+	{
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	}
+	else
+	{
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+	}
+
 	glBindVertexArray(0);
 }
 
