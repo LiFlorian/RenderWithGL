@@ -3,7 +3,7 @@
 #include <assimp/postprocess.h>
 
 #include "ModelRender.h"
-#include "stb_image.h"
+#include "../tool/stb_image.h"
 #include "RenderUtil.h"
 
 ModelRender::ModelRender(char* path)

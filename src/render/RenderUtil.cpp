@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "RenderUtil.h"
-#include "stb_image.h"
+#include "../tool/stb_image.h"
 
 using namespace std;
 

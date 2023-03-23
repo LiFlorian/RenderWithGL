@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "RenderContext.h"
-#include "stb_image.h"
+#include "../tool/stb_image.h"
 
 RenderContext::RenderContext(Shader* ContextShader, EVertexType VertexType, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize)
 {

@@ -19,29 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Backup.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="glad.c" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="MainWindow.cpp" />
-    <ClCompile Include="MeshRender.cpp" />
-    <ClCompile Include="ModelRender.cpp" />
-    <ClCompile Include="RenderContext.cpp" />
-    <ClCompile Include="RenderUtil.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="stb_image_wrap.cpp" />
+    <ClCompile Include="src\Backup.cpp" />
+    <ClCompile Include="src\obj\Camera.cpp" />
+    <ClCompile Include="src\tool\glad.c" />
+    <ClCompile Include="src\obj\Light.cpp" />
+    <ClCompile Include="src\MainWindow.cpp" />
+    <ClCompile Include="src\render\MeshRender.cpp" />
+    <ClCompile Include="src\render\ModelRender.cpp" />
+    <ClCompile Include="src\render\RenderContext.cpp" />
+    <ClCompile Include="src\render\RenderUtil.cpp" />
+    <ClCompile Include="src\render\Shader.cpp" />
+    <ClCompile Include="src\tool\stb_image_wrap.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Data.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="MainWindow.h" />
-    <ClInclude Include="MeshRender.h" />
-    <ClInclude Include="ModelRender.h" />
-    <ClInclude Include="RenderContext.h" />
-    <ClInclude Include="RenderUtil.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="src\obj\Camera.h" />
+    <ClInclude Include="src\Data.h" />
+    <ClInclude Include="src\obj\Light.h" />
+    <ClInclude Include="src\MainWindow.h" />
+    <ClInclude Include="src\render\MeshRender.h" />
+    <ClInclude Include="src\render\ModelRender.h" />
+    <ClInclude Include="src\render\RenderContext.h" />
+    <ClInclude Include="src\render\RenderUtil.h" />
+    <ClInclude Include="src\render\Shader.h" />
+    <ClInclude Include="src\tool\stb_image.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

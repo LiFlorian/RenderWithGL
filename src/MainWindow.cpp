@@ -10,14 +10,16 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "MainWindow.h"
-#include "RenderContext.h"
-#include "Shader.h"
 #include "Data.h"
-#include "RenderUtil.h"
-#include "Camera.h"
-#include "Light.h"
-#include "ModelRender.h"
+
+#include "MainWindow.h"
+#include "render/RenderContext.h"
+#include "render/Shader.h"
+#include "render/RenderUtil.h"
+#include "render/ModelRender.h"
+#include "obj/Camera.h"
+#include "obj/Light.h"
+
 
 
 // 窗口尺寸定义

@@ -15,69 +15,69 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MainWindow.cpp">
+    <ClCompile Include="src\MainWindow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="src\tool\glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="RenderContext.cpp">
+    <ClCompile Include="src\render\RenderContext.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="src\render\Shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="stb_image_wrap.cpp">
+    <ClCompile Include="src\tool\stb_image_wrap.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="RenderUtil.cpp">
+    <ClCompile Include="src\render\RenderUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="src\obj\Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Backup.cpp">
+    <ClCompile Include="src\Backup.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
+    <ClCompile Include="src\obj\Light.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MeshRender.cpp">
+    <ClCompile Include="src\render\MeshRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ModelRender.cpp">
+    <ClCompile Include="src\render\ModelRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MainWindow.h">
+    <ClInclude Include="src\MainWindow.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Data.h">
+    <ClInclude Include="src\Data.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="RenderContext.h">
+    <ClInclude Include="src\render\RenderContext.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="src\render\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image.h">
+    <ClInclude Include="src\tool\stb_image.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="RenderUtil.h">
+    <ClInclude Include="src\render\RenderUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="src\obj\Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
+    <ClInclude Include="src\obj\Light.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MeshRender.h">
+    <ClInclude Include="src\render\MeshRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ModelRender.h">
+    <ClInclude Include="src\render\ModelRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
