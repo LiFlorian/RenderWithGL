@@ -56,9 +56,9 @@ int main()
 	ContextShader->Use();
 	// 平行光参数
 	ContextShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-	ContextShader->SetVec3("paraLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-	ContextShader->SetVec3("paraLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ContextShader->SetVec3("paraLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ContextShader->SetVec3("paraLight.ambient", glm::vec3(0.02f, 0.02f, 0.02f));
+	ContextShader->SetVec3("paraLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
+	ContextShader->SetVec3("paraLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
 	// 点光源静态参数
 	ContextShader->SetVec3("pointLight.position", LightPos);
 	ContextShader->SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
