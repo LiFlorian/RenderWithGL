@@ -70,9 +70,9 @@ int main()
 	MeshRender* LightObj = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
 
 	// 光源Shader及静态参数
-	Shader* LightShader = new Shader("shader/SingleColor.vs", "shader/SingleColor.fs");
-	LightShader->Use();
-	LightShader->SetVec3("InColor", glm::vec3(1.0f));
+	Shader* SingleColorShader = new Shader("shader/SingleColor.vs", "shader/SingleColor.fs");
+	SingleColorShader->Use();
+	SingleColorShader->SetVec3("InColor", glm::vec3(1.0f));
 
 
 
@@ -82,7 +82,7 @@ int main()
 
 
 	// 平面
-	Shader* PlanShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
+	Shader* SingleTexShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
 	
 	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
 	unsigned int PlanTex = TexLoader->LoadTexture((char*)"res/textures/metal.png");
@@ -98,29 +98,49 @@ int main()
 	ModelRender* Obj = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
 
 	// 模型Shader及静态参数
-	Shader* ObjShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
-	ObjShader->Use();
+	Shader* ModelPhongShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
+	ModelPhongShader->Use();
 	// 平行光参数
-	ObjShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-	ObjShader->SetVec3("paraLight.ambient", glm::vec3(0.02f, 0.02f, 0.02f));
-	ObjShader->SetVec3("paraLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
-	ObjShader->SetVec3("paraLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
+	ModelPhongShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	ModelPhongShader->SetVec3("paraLight.ambient", glm::vec3(0.02f, 0.02f, 0.02f));
+	ModelPhongShader->SetVec3("paraLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
+	ModelPhongShader->SetVec3("paraLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
 	// 点光源静态参数
-	ObjShader->SetVec3("pointLight.position", LightPos);
-	ObjShader->SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-	ObjShader->SetVec3("pointLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ObjShader->SetVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	ObjShader->SetFloat("pointLight.constant", 1.0f);
-	ObjShader->SetFloat("pointLight.linear", 0.09f);
-	ObjShader->SetFloat("pointLight.quadratic", 0.032f);
+	ModelPhongShader->SetVec3("pointLight.position", LightPos);
+	ModelPhongShader->SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+	ModelPhongShader->SetVec3("pointLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ModelPhongShader->SetVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ModelPhongShader->SetFloat("pointLight.constant", 1.0f);
+	ModelPhongShader->SetFloat("pointLight.linear", 0.09f);
+	ModelPhongShader->SetFloat("pointLight.quadratic", 0.032f);
 	// 投射光静态参数
-	ObjShader->SetVec3("spotLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ObjShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	ObjShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
-	ObjShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+	ModelPhongShader->SetVec3("spotLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ModelPhongShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ModelPhongShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
+	ModelPhongShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 	
 	// 光泽度
-	ObjShader->SetFloat("material.shininess", 32.0f);
+	ModelPhongShader->SetFloat("material.shininess", 32.0f);
+
+
+	/*----------------------------------------------------
+		Part AlphaBlending
+	----------------------------------------------------*/
+
+
+
+	MeshRender* Window = new MeshRender(Window_TexNormalVert, sizeof(Window_TexNormalVert) / sizeof(float));
+	unsigned int WindowTex = TexLoader->LoadTexture((char*)"res/textures/blending_window.png");
+	Window->AddCustomTexture(WindowTex, "InTex");
+
+	vector<glm::vec3> Windows_Pos
+	{
+		glm::vec3(-1.5f, 0.0f, -0.48f),
+		glm::vec3(1.5f, 0.0f, 0.51f),
+		glm::vec3(0.0f, 0.0f, 0.7f),
+		glm::vec3(-0.3f, 0.0f, -2.3f),
+		glm::vec3(0.5f, 0.0f, -0.6f)
+	};
 
 
 
@@ -128,7 +148,9 @@ int main()
 		Part Render Loop
 	----------------------------------------------------*/
 
-
+	// 开启颜色混合
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 使用src颜色的Alpha进行混合, src颜色即当前frag颜色, dest颜色即缓冲中的颜色
 
 	glEnable(GL_DEPTH_TEST); // 开启深度测试
 
@@ -169,9 +191,9 @@ int main()
 		modelMatrixLight = glm::translate(modelMatrixLight, LightPos);
 		modelMatrixLight = glm::scale(modelMatrixLight, glm::vec3(0.2f));
 
-		LightShader->Use();
+		SingleColorShader->Use();
 
-		LightObj->Draw(LightShader, modelMatrixLight, viewMatrix, projectionMatrix);
+		LightObj->Draw(SingleColorShader, modelMatrixLight, viewMatrix, projectionMatrix);
 
 
 
@@ -183,9 +205,9 @@ int main()
 		glm::mat4 modelMatrixFloor = glm::mat4(1.0f);
 
 		// 绘制Plan
-		PlanShader->Use();
+		SingleTexShader->Use();
 
-		Plan->Draw(PlanShader, modelMatrixFloor, viewMatrix, projectionMatrix);
+		Plan->Draw(SingleTexShader, modelMatrixFloor, viewMatrix, projectionMatrix);
 
 
 		/*----------------------------------------------------
@@ -198,13 +220,42 @@ int main()
 		modelMatrixObj = glm::scale(modelMatrixObj, glm::vec3(0.05f));
 		
 		// 设置模型shader的动态参数
-		ObjShader->Use();
-		ObjShader->SetVec3("ViewPos", CurCamera->Pos);
-		ObjShader->SetVec3("spotLight.position", CurCamera->Pos);
-		ObjShader->SetVec3("spotLight.direction", CurCamera->Front);
+		ModelPhongShader->Use();
+		ModelPhongShader->SetVec3("ViewPos", CurCamera->Pos);
+		ModelPhongShader->SetVec3("spotLight.position", CurCamera->Pos);
+		ModelPhongShader->SetVec3("spotLight.direction", CurCamera->Front);
 
 		// 绘制模型
-		Obj->Draw(ObjShader, modelMatrixObj, viewMatrix, projectionMatrix);
+		Obj->Draw(ModelPhongShader, modelMatrixObj, viewMatrix, projectionMatrix);
+
+
+		/*----------------------------------------------------
+		Loop Alpha Blending
+		----------------------------------------------------*/
+
+		// 透明物体排序
+
+		// 根据相机距离进行排序
+		std::map<float, glm::vec3> sorted;
+		for (unsigned int i = 0; i < Windows_Pos.size(); i++)
+		{
+			float distance = glm::length(CurCamera->Pos - Windows_Pos[i]);
+			sorted[distance] = Windows_Pos[i];
+		}
+
+
+		SingleTexShader->Use();
+
+		// 根据排序的顺序由大到小渲染(由远及近)
+		glm::mat4 modelMatrixWindow;
+		for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+		{
+			modelMatrixWindow = glm::mat4(1.0f);
+			modelMatrixWindow = glm::translate(modelMatrixWindow, it->second);
+
+			Window->Draw(SingleTexShader, modelMatrixWindow, viewMatrix, projectionMatrix);
+		}
+
 
 
         glfwSwapBuffers(window);

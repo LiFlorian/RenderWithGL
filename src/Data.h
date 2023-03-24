@@ -199,3 +199,14 @@ float Plan_TexNormalVert[] = {
 	-5.0f, -0.5f, -5.0f,  0.0f,  1.0f,  0.0f,  0.0f, 2.0f,
 	 5.0f, -0.5f, -5.0f,  0.0f,  1.0f,  0.0f,  2.0f, 2.0f
 };
+
+float Window_TexNormalVert[] = {
+	// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+	0.0f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+	0.0f, -0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+	1.0f, -0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+
+	0.0f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+	1.0f, -0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+	1.0f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f
+};
