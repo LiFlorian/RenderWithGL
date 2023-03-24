@@ -62,6 +62,7 @@ int main()
 		Part 光源
 	----------------------------------------------------*/
 
+
 	// 定义常数
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
@@ -79,6 +80,7 @@ int main()
 		Part 场景
 	----------------------------------------------------*/
 
+
 	// 平面
 	Shader* PlanShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
 	
@@ -88,36 +90,45 @@ int main()
 
 
 	/*----------------------------------------------------
-		Part Model
+		Part Obj
 	----------------------------------------------------*/
 
+
 	// 模型Obj
-	ModelRender* Model = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
+	ModelRender* Obj = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
 
 	// 模型Shader及静态参数
-	Shader* ModelShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
-	ModelShader->Use();
+	Shader* ObjShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
+	ObjShader->Use();
 	// 平行光参数
-	ModelShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-	ModelShader->SetVec3("paraLight.ambient", glm::vec3(0.02f, 0.02f, 0.02f));
-	ModelShader->SetVec3("paraLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
-	ModelShader->SetVec3("paraLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
+	ObjShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	ObjShader->SetVec3("paraLight.ambient", glm::vec3(0.02f, 0.02f, 0.02f));
+	ObjShader->SetVec3("paraLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
+	ObjShader->SetVec3("paraLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
 	// 点光源静态参数
-	ModelShader->SetVec3("pointLight.position", LightPos);
-	ModelShader->SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-	ModelShader->SetVec3("pointLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ModelShader->SetVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	ModelShader->SetFloat("pointLight.constant", 1.0f);
-	ModelShader->SetFloat("pointLight.linear", 0.09f);
-	ModelShader->SetFloat("pointLight.quadratic", 0.032f);
+	ObjShader->SetVec3("pointLight.position", LightPos);
+	ObjShader->SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+	ObjShader->SetVec3("pointLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ObjShader->SetVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ObjShader->SetFloat("pointLight.constant", 1.0f);
+	ObjShader->SetFloat("pointLight.linear", 0.09f);
+	ObjShader->SetFloat("pointLight.quadratic", 0.032f);
 	// 投射光静态参数
-	ModelShader->SetVec3("spotLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ModelShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	ModelShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
-	ModelShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+	ObjShader->SetVec3("spotLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	ObjShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	ObjShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
+	ObjShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 	
 	// 光泽度
-	ModelShader->SetFloat("material.shininess", 32.0f);
+	ObjShader->SetFloat("material.shininess", 32.0f);
+
+
+
+	/*----------------------------------------------------
+		Part Render Loop
+	----------------------------------------------------*/
+
+
 
 	glEnable(GL_DEPTH_TEST); // 开启深度测试
 
@@ -127,12 +138,12 @@ int main()
     // 绘制循环
     while (!glfwWindowShouldClose(window))
     {
-		// 清除深度缓冲
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// 清除深度缓冲及模板缓冲
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		// 渲染背景
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		//glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT);
 
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
@@ -150,7 +161,7 @@ int main()
 
 
 		/*----------------------------------------------------
-		Part 光源
+		Loop 光源
 		----------------------------------------------------*/
 
 		// 光源Model矩阵
@@ -165,27 +176,7 @@ int main()
 
 
 		/*----------------------------------------------------
-		Part Model
-		----------------------------------------------------*/
-
-		// 模型Model矩阵
-		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, cubePositions[0]);
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f));
-		
-		// 设置模型shader的动态参数
-		ModelShader->Use();
-		ModelShader->SetVec3("ViewPos", CurCamera->Pos);
-		ModelShader->SetVec3("spotLight.position", CurCamera->Pos);
-		ModelShader->SetVec3("spotLight.direction", CurCamera->Front);
-
-		// 绘制模型
-		Model->Draw(ModelShader, modelMatrix, viewMatrix, projectionMatrix);
-
-
-
-		/*----------------------------------------------------
-		Part 场景
+		Loop 场景
 		----------------------------------------------------*/
 
 		// Plan Model矩阵
@@ -193,8 +184,28 @@ int main()
 
 		// 绘制Plan
 		PlanShader->Use();
-		
+
 		Plan->Draw(PlanShader, modelMatrixFloor, viewMatrix, projectionMatrix);
+
+
+		/*----------------------------------------------------
+		Loop Obj
+		----------------------------------------------------*/
+		
+		// 模型Model矩阵
+		glm::mat4 modelMatrixObj = glm::mat4(1.0f);
+		modelMatrixObj = glm::translate(modelMatrixObj, cubePositions[0]);
+		modelMatrixObj = glm::scale(modelMatrixObj, glm::vec3(0.05f));
+		
+		// 设置模型shader的动态参数
+		ObjShader->Use();
+		ObjShader->SetVec3("ViewPos", CurCamera->Pos);
+		ObjShader->SetVec3("spotLight.position", CurCamera->Pos);
+		ObjShader->SetVec3("spotLight.direction", CurCamera->Front);
+
+		// 绘制模型
+		Obj->Draw(ObjShader, modelMatrixObj, viewMatrix, projectionMatrix);
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

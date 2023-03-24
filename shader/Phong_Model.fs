@@ -66,7 +66,7 @@ void main()
 
     vec3 result = calculate_paraLight(paraLight, diffuseColor, specularColor);
     result += calculate_pointLight(pointLight, diffuseColor, specularColor);
-    result += calculate_spotLight(spotLight, diffuseColor, specularColor);
+    // result += calculate_spotLight(spotLight, diffuseColor, specularColor);
 
     FragColor = vec4(result, 1.0);
 } 

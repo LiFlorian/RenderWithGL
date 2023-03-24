@@ -252,3 +252,44 @@
 //	glfwTerminate();
 //	return 0;
 //}
+
+
+
+/*----------------------------------------------------
+		模板测试绘制模型外轮廓管线流程
+----------------------------------------------------*/
+
+//glEnable(GL_STENCIL_TEST);
+//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // 设置模板缓冲失败及深度测试失败时什么都不做, 成功时写入模板缓冲
+//glStencilMask(0xFF); // 启用模板缓冲写入
+//glStencilFunc(GL_ALWAYS, 1, 0xFF); // 掩码设为1, ref设为1, 接下来所有绘制的像素都将在模板缓冲中写入1
+//
+//// 模型Model矩阵
+//glm::mat4 modelMatrix = glm::mat4(1.0f);
+//modelMatrix = glm::translate(modelMatrix, cubePositions[0]);
+//modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f));
+//
+//// 设置模型shader的动态参数
+//ModelShader->Use();
+//ModelShader->SetVec3("ViewPos", CurCamera->Pos);
+//ModelShader->SetVec3("spotLight.position", CurCamera->Pos);
+//ModelShader->SetVec3("spotLight.direction", CurCamera->Front);
+//
+//// 绘制模型
+//Model->Draw(ModelShader, modelMatrix, viewMatrix, projectionMatrix);
+//
+//
+//glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // 掩码设为1, ref设为1, NOTEQUAL表示禁用之前模板缓冲写入1的区域
+//glStencilMask(0x00); // 禁止模板缓冲的写入
+//glDisable(GL_DEPTH_TEST);
+//
+//
+//// 绘制外轮廓
+//modelMatrix = glm::scale(modelMatrix, glm::vec3(1.1f));
+//
+//OutlineShader->Use();
+//Model->Draw(OutlineShader, modelMatrix, viewMatrix, projectionMatrix);
+//
+//glStencilMask(0xFF);
+//glEnable(GL_DEPTH_TEST);
+//glDisable(GL_STENCIL_TEST);
