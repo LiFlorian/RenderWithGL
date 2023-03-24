@@ -153,6 +153,73 @@ int main()
 
 
 
+
+	/*----------------------------------------------------
+		Part Render Target
+	----------------------------------------------------*/
+
+
+
+	Shader* RTShader = new Shader("shader/RTRender.vs", "shader/RTRender.fs");
+	RTShader->Use();
+	RTShader->SetInt("RT", 0);
+
+
+	// 创建帧缓冲对象并绑定
+	unsigned int FBO;
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+	// 生成帧缓冲附加纹理
+	unsigned int texColorBuffer;
+	glGenTextures(1, &texColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// 将它附加到当前绑定的帧缓冲对象
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+
+	// 创建渲染缓冲对象并绑定
+	unsigned int RBO;
+	glGenRenderbuffers(1, &RBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// 将渲染缓冲对象设置为帧缓冲对象的深度以及模板缓冲附件
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+	// 检查帧缓冲对象完整性
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	}
+
+	// 解绑帧缓冲对象操作
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 屏幕纹理渲染缓冲数据
+	unsigned int quadVAO, quadVBO;
+
+	glGenVertexArrays(1, &quadVAO);
+	glBindVertexArray(quadVAO);
+
+	glGenBuffers(1, &quadVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+
+
+
 	/*----------------------------------------------------
 		Part Render Configuration
 	----------------------------------------------------*/
@@ -160,9 +227,6 @@ int main()
 	// 开启颜色混合
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 使用src颜色的Alpha进行混合, src颜色即当前frag颜色, dest颜色即缓冲中的颜色
-
-	// 开启深度测试
-	glEnable(GL_DEPTH_TEST); 
 
 	float deltaTime = 0;
 	float lastFrame = static_cast<float>(glfwGetTime());
@@ -176,16 +240,22 @@ int main()
     // 绘制循环
     while (!glfwWindowShouldClose(window))
     {
-		// 清除深度缓冲及模板缓冲
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		/*----------------------------------------------------
+		Loop 帧间隔deltaTime刷新
+		----------------------------------------------------*/
 
-		//渲染背景
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
 
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
+
+
+		/*----------------------------------------------------
+		Loop 输入处理及相机位置更新
+		计算通用View及Projection矩阵
+		----------------------------------------------------*/
+
 
 		processInput(deltaTime, window);
 
@@ -197,13 +267,26 @@ int main()
 		glm::mat4 viewMatrix = CurCamera->LookAt();
 
 
-		// 关闭面剔除
-		glDisable(GL_CULL_FACE);
+		/*----------------------------------------------------
+		Loop 启用FBO
+		----------------------------------------------------*/
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+		glEnable(GL_DEPTH_TEST); // 开启深度测试
+
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 设置背景色
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除颜色及深度缓冲
 
 
 		/*----------------------------------------------------
 		Loop 场景
 		----------------------------------------------------*/
+
+
+		// 关闭面剔除
+		glDisable(GL_CULL_FACE);
 
 		// Plan Model矩阵
 		glm::mat4 modelMatrixFloor = glm::mat4(1.0f);
@@ -212,8 +295,6 @@ int main()
 		SingleTexShader->Use();
 
 		Plan->Draw(SingleTexShader, modelMatrixFloor, viewMatrix, projectionMatrix);
-
-
 
 		// 开启面剔除
 		glEnable(GL_CULL_FACE);
@@ -232,14 +313,12 @@ int main()
 
 		LightObj->Draw(SingleColorShader, modelMatrixLight, viewMatrix, projectionMatrix);
 
-		
-
 
 		/*----------------------------------------------------
 		Loop Obj
 		----------------------------------------------------*/
 		
-		// 模型Model矩阵
+		// nanosuit Model矩阵
 		glm::mat4 modelMatrixObj = glm::mat4(1.0f);
 		modelMatrixObj = glm::translate(modelMatrixObj, cubePositions[0]);
 		modelMatrixObj = glm::scale(modelMatrixObj, glm::vec3(0.05f));
@@ -254,6 +333,7 @@ int main()
 		Obj->Draw(ModelPhongShader, modelMatrixObj, viewMatrix, projectionMatrix);
 
 
+		// Cube Model矩阵
 		modelMatrixObj = glm::mat4(1.0f);
 		modelMatrixObj = glm::translate(modelMatrixObj, cubePositions[1]);
 		modelMatrixObj = glm::scale(modelMatrixObj, glm::vec3(3.0f));
@@ -288,6 +368,35 @@ int main()
 
 			Window->Draw(SingleTexShader, modelMatrixWindow, viewMatrix, projectionMatrix);
 		}
+
+
+
+		/*----------------------------------------------------
+		Loop FBO处理及渲染至屏幕
+		----------------------------------------------------*/
+
+		
+		// 切换至默认Buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+
+		// 禁用深度缓冲
+		glDisable(GL_DEPTH_TEST);
+
+		// 清除默认Buffer的缓冲并设置背景色
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+
+		// 渲染屏幕纹理
+		RTShader->Use();
+
+		glBindVertexArray(quadVAO);
+
+		// 开启线框绘制模式, Debug用
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
 

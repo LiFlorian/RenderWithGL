@@ -210,3 +210,15 @@ float Window_TexNormalVert[] = {
 	1.0f, -0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
 	1.0f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f
 };
+
+// 离屏四边形坐标及纹理数据
+float quadVertices[] = { 
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+};
