@@ -30,10 +30,12 @@ struct Texture {
 class MeshRender
 {
 public:
-	
-	vector<Vertex> vertices;
+
+	vector<unsigned int> customTexList;
 
 	vector<unsigned int> indices;
+	
+	vector<Vertex> vertices;
 
 	vector<Texture> textures;
 
@@ -49,7 +51,7 @@ public:
 
 	virtual void Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
-	void SetCustomTexture(char* path, string shaderTarget);
+	void AddCustomTexture(const char* path, Shader* shader, string shaderTarget);
 private:
 	
 	unsigned int VAO, VBO, EBO;

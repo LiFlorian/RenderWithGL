@@ -109,6 +109,15 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 		glActiveTexture(GL_TEXTURE0);
 	}
 
+	if (!customTexList.empty())
+	{
+		for (unsigned int i = 0; i < customTexList.size(); i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, customTexList[i]);
+		}
+	}
+
 	// Model矩阵
 	int modelLoc = glGetUniformLocation(shader->ID, "model");
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -137,8 +146,13 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 	glBindVertexArray(0);
 }
 
-void MeshRender::SetCustomTexture(char* path, string shaderTarget)
+void MeshRender::AddCustomTexture(const char* path, Shader* shader, string shaderTarget)
 {
-	
+	shader->Use();
+
+	unsigned int TexID = LoadTexture(path);
+	shader->SetInt(shaderTarget, customTexList.size());
+
+	customTexList.push_back(TexID);
 }
 

@@ -64,9 +64,9 @@ int main()
 	MeshRender* LightObj = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
 
 	// 光源Shader及静态参数
-	Shader* LightShader = new Shader("shader/Light/Light_Base.vs", "shader/Light/Light_Base.fs");
+	Shader* LightShader = new Shader("shader/SingleColor.vs", "shader/SingleColor.fs");
 	LightShader->Use();
-	LightShader->SetVec3("LightColor", glm::vec3(1.0f));
+	LightShader->SetVec3("InColor", glm::vec3(1.0f));
 
 
 
@@ -75,12 +75,10 @@ int main()
 	----------------------------------------------------*/
 
 	// 平面
+	Shader* PlanShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
+
 	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
-
-	Shader* PlanShader = new Shader("shader/Model/SimpleTex.vs", "shader/Model/SimpleTex.fs");
-	PlanShader->Use();
-	unsigned int FloorTex = LoadTexture("res/textures/metal.png");
-
+	Plan->AddCustomTexture("res/textures/metal.png", PlanShader, "InTex");
 
 
 	/*----------------------------------------------------
@@ -91,7 +89,7 @@ int main()
 	ModelRender* Model = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
 
 	// 模型Shader及静态参数
-	Shader* ModelShader = new Shader("shader/Model/Model.vs", "shader/Model/Model.fs");
+	Shader* ModelShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
 	ModelShader->Use();
 	// 平行光参数
 	ModelShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
@@ -189,8 +187,7 @@ int main()
 
 		// 绘制Plan
 		PlanShader->Use();
-		glBindTexture(GL_TEXTURE_2D, FloorTex);
-
+		
 		Plan->Draw(PlanShader, modelMatrixFloor, viewMatrix, projectionMatrix);
 
         glfwSwapBuffers(window);
