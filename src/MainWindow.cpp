@@ -51,6 +51,12 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback); // 鼠标滑动回调
 	glfwSetScrollCallback(window, scroll_callback); // 鼠标滚轮回调
 
+
+
+	/*----------------------------------------------------
+		Part 光源
+	----------------------------------------------------*/
+
 	// 定义常数
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
@@ -62,11 +68,27 @@ int main()
 	LightShader->Use();
 	LightShader->SetVec3("LightColor", glm::vec3(1.0f));
 
-	// 模型Obj
-	ModelRender* Model = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
+
+
+	/*----------------------------------------------------
+		Part 场景
+	----------------------------------------------------*/
 
 	// 平面
 	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
+
+	Shader* PlanShader = new Shader("shader/Model/SimpleTex.vs", "shader/Model/SimpleTex.fs");
+	PlanShader->Use();
+	unsigned int FloorTex = LoadTexture("res/textures/metal.png");
+
+
+
+	/*----------------------------------------------------
+		Part Model
+	----------------------------------------------------*/
+
+	// 模型Obj
+	ModelRender* Model = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
 
 	// 模型Shader及静态参数
 	Shader* ModelShader = new Shader("shader/Model/Model.vs", "shader/Model/Model.fs");
@@ -121,35 +143,55 @@ int main()
 		// View矩阵
 		glm::mat4 viewMatrix = CurCamera->LookAt();
 
+
+
+		/*----------------------------------------------------
+		Part 光源
+		----------------------------------------------------*/
+
 		// 光源Model矩阵
 		glm::mat4 modelMatrixLight = glm::mat4(1.0f);
 		modelMatrixLight = glm::translate(modelMatrixLight, LightPos);
 		modelMatrixLight = glm::scale(modelMatrixLight, glm::vec3(0.2f));
 
-		// 绘制光源
 		LightShader->Use();
 
 		LightObj->Draw(LightShader, modelMatrixLight, viewMatrix, projectionMatrix);
+
+
+
+		/*----------------------------------------------------
+		Part Model
+		----------------------------------------------------*/
+
+		// 模型Model矩阵
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::translate(modelMatrix, cubePositions[0]);
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f));
 		
 		// 设置模型shader的动态参数
 		ModelShader->Use();
 		ModelShader->SetVec3("ViewPos", CurCamera->Pos);
 		ModelShader->SetVec3("spotLight.position", CurCamera->Pos);
 		ModelShader->SetVec3("spotLight.direction", CurCamera->Front);
-		
-		// 模型Model矩阵
-		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, cubePositions[0]);
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f));
 
 		// 绘制模型
 		Model->Draw(ModelShader, modelMatrix, viewMatrix, projectionMatrix);
+
+
+
+		/*----------------------------------------------------
+		Part 场景
+		----------------------------------------------------*/
 
 		// Plan Model矩阵
 		glm::mat4 modelMatrixFloor = glm::mat4(1.0f);
 
 		// 绘制Plan
-		Plan->Draw(ModelShader, modelMatrixFloor, viewMatrix, projectionMatrix);
+		PlanShader->Use();
+		glBindTexture(GL_TEXTURE_2D, FloorTex);
+
+		Plan->Draw(PlanShader, modelMatrixFloor, viewMatrix, projectionMatrix);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

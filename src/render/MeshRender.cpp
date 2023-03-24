@@ -81,24 +81,33 @@ void MeshRender::SetupMesh()
 
 void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection)
 {
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
-
-	for (unsigned int i = 0; i < textures.size(); i++)
+	if (!textures.empty())
 	{
-		glActiveTexture(GL_TEXTURE0 + i); // 在绑定之前激活相应的纹理单元
-		string number;
-		string name = textures[i].type;
-		if (name == "texture_diffuse")
-			number = std::to_string(diffuseNr++);
-		else if (name == "texture_specular")
-			number = std::to_string(specularNr++);
+		unsigned int diffuseNr = 1;
+		unsigned int specularNr = 1;
 
-		shader->SetInt(("material." + name + number).c_str(), i);
-		glBindTexture(GL_TEXTURE_2D, textures[i].ID);
+		for (unsigned int i = 0; i < textures.size(); i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i); // 在绑定之前激活相应的纹理单元
+
+			string number;
+			string name = textures[i].type;
+
+			if (name == "texture_diffuse")
+			{
+				number = std::to_string(diffuseNr++);
+			}
+			else if (name == "texture_specular")
+			{
+				number = std::to_string(specularNr++);
+			}
+
+			shader->SetInt(("material." + name + number).c_str(), i);
+			glBindTexture(GL_TEXTURE_2D, textures[i].ID);
+		}
+
+		glActiveTexture(GL_TEXTURE0);
 	}
-
-	glActiveTexture(GL_TEXTURE0);
 
 	// Model矩阵
 	int modelLoc = glGetUniformLocation(shader->ID, "model");
@@ -128,7 +137,7 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 	glBindVertexArray(0);
 }
 
-void MeshRender::SetCustomTexture(char* path)
+void MeshRender::SetCustomTexture(char* path, string shaderTarget)
 {
 	
 }
