@@ -30,6 +30,7 @@
     <ClCompile Include="src\backup\RenderContext.cpp" />
     <ClCompile Include="src\render\Shader.cpp" />
     <ClCompile Include="src\tool\stb_image_wrap.cpp" />
+    <ClCompile Include="src\tool\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\obj\Camera.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="src\render\RenderUtil.h" />
     <ClInclude Include="src\render\Shader.h" />
     <ClInclude Include="src\tool\stb_image.h" />
+    <ClInclude Include="src\tool\TextureLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -14,9 +14,9 @@
 
 #include "MainWindow.h"
 #include "render/Shader.h"
-#include "render/RenderUtil.h"
 #include "render/ModelRender.h"
 #include "obj/Camera.h"
+#include "tool/TextureLoader.h"
 
 
 // 窗口尺寸定义
@@ -31,6 +31,8 @@ void processInput(float deltaTime, GLFWwindow* window);
 
 // 全局相机
 Camera* CurCamera;
+
+TextureLoader* TexLoader;
 
 int main()
 {
@@ -50,6 +52,9 @@ int main()
 
 	glfwSetCursorPosCallback(window, mouse_callback); // 鼠标滑动回调
 	glfwSetScrollCallback(window, scroll_callback); // 鼠标滚轮回调
+
+
+	TexLoader = new TextureLoader();
 
 
 
@@ -76,9 +81,10 @@ int main()
 
 	// 平面
 	Shader* PlanShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
-
+	
 	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
-	Plan->AddCustomTexture("res/textures/metal.png", PlanShader, "InTex");
+	unsigned int PlanTex = TexLoader->LoadTexture((char*)"res/textures/metal.png");
+	Plan->AddCustomTexture(PlanTex, "InTex");
 
 
 	/*----------------------------------------------------

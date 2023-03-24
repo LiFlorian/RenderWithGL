@@ -1,5 +1,6 @@
 ﻿#include "MeshRender.h"
-#include "../render/RenderUtil.h"
+
+using namespace std;
 
 MeshRender::MeshRender(float VertexList[], unsigned int VertexSize)
 {
@@ -114,7 +115,11 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 		for (unsigned int i = 0; i < customTexList.size(); i++)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, customTexList[i]);
+
+			CustomTex customTex = customTexList[i];
+
+			shader->SetInt(customTex.ShaderTarget, i);
+			glBindTexture(GL_TEXTURE_2D, customTex.TexID);
 		}
 	}
 
@@ -146,13 +151,12 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 	glBindVertexArray(0);
 }
 
-void MeshRender::AddCustomTexture(const char* path, Shader* shader, string shaderTarget)
+void MeshRender::AddCustomTexture(unsigned int TexID, string ShaderTarget)
 {
-	shader->Use();
+	CustomTex customTex;
+	customTex.TexID = TexID;
+	customTex.ShaderTarget = ShaderTarget;
 
-	unsigned int TexID = LoadTexture(path);
-	shader->SetInt(shaderTarget, customTexList.size());
-
-	customTexList.push_back(TexID);
+	customTexList.push_back(customTex);
 }
 

@@ -48,6 +48,9 @@
     <ClCompile Include="src\render\RenderUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\tool\TextureLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\MainWindow.h">
@@ -78,6 +81,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\render\ModelRender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tool\TextureLoader.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

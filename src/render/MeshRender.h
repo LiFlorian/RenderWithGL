@@ -26,18 +26,22 @@ struct Texture {
 	aiString path;
 };
 
+struct CustomTex {
+	unsigned int TexID;
+	string ShaderTarget;
+};
 
 class MeshRender
 {
 public:
-
-	vector<unsigned int> customTexList;
 
 	vector<unsigned int> indices;
 	
 	vector<Vertex> vertices;
 
 	vector<Texture> textures;
+
+	vector<CustomTex> customTexList;
 
 public:
 
@@ -51,7 +55,7 @@ public:
 
 	virtual void Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
-	void AddCustomTexture(const char* path, Shader* shader, string shaderTarget);
+	void AddCustomTexture(unsigned int TexID, string ShaderTarget);
 private:
 	
 	unsigned int VAO, VBO, EBO;
