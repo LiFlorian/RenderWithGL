@@ -57,7 +57,6 @@ int main()
 	TexLoader = new TextureLoader();
 
 
-
 	/*----------------------------------------------------
 		Part 光源
 	----------------------------------------------------*/
@@ -66,8 +65,7 @@ int main()
 	// 定义常数
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
-	// 光源Obj
-	MeshRender* LightObj = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
+
 
 	// 光源Shader及静态参数
 	Shader* SingleColorShader = new Shader("shader/SingleColor.vs", "shader/SingleColor.fs");
@@ -76,14 +74,19 @@ int main()
 
 
 
+	// 光源Obj
+	MeshRender* LightObj = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
+
+
+
 	/*----------------------------------------------------
 		Part 场景
 	----------------------------------------------------*/
 
 
-	// 平面
 	Shader* SingleTexShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
 	
+	// 平面
 	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
 	unsigned int PlanTex = TexLoader->LoadTexture((char*)"res/textures/metal.png");
 	Plan->AddCustomTexture(PlanTex, "InTex");
@@ -93,9 +96,6 @@ int main()
 		Part Obj
 	----------------------------------------------------*/
 
-
-	// 模型Obj
-	ModelRender* Obj = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
 
 	// 模型Shader及静态参数
 	Shader* ModelPhongShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
@@ -118,20 +118,25 @@ int main()
 	ModelPhongShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 	ModelPhongShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
 	ModelPhongShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-	
+
 	// 光泽度
 	ModelPhongShader->SetFloat("material.shininess", 32.0f);
+
+
+	// 模型Obj
+	ModelRender* Obj = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
+
+
+	// 立方体Obj
+	MeshRender* Cube = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
+	unsigned int CubeTex = TexLoader->LoadTexture((char*)"res/textures/marble.jpg");
+	Cube->AddCustomTexture(CubeTex, "InTex");
+
 
 
 	/*----------------------------------------------------
 		Part AlphaBlending
 	----------------------------------------------------*/
-
-
-
-	MeshRender* Window = new MeshRender(Window_TexNormalVert, sizeof(Window_TexNormalVert) / sizeof(float));
-	unsigned int WindowTex = TexLoader->LoadTexture((char*)"res/textures/blending_window.png");
-	Window->AddCustomTexture(WindowTex, "InTex");
 
 	vector<glm::vec3> Windows_Pos
 	{
@@ -142,20 +147,31 @@ int main()
 		glm::vec3(0.5f, 0.0f, -0.6f)
 	};
 
+	MeshRender* Window = new MeshRender(Window_TexNormalVert, sizeof(Window_TexNormalVert) / sizeof(float));
+	unsigned int WindowTex = TexLoader->LoadTexture((char*)"res/textures/blending_window.png");
+	Window->AddCustomTexture(WindowTex, "InTex");
+
 
 
 	/*----------------------------------------------------
-		Part Render Loop
+		Part Render Configuration
 	----------------------------------------------------*/
 
 	// 开启颜色混合
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 使用src颜色的Alpha进行混合, src颜色即当前frag颜色, dest颜色即缓冲中的颜色
 
-	glEnable(GL_DEPTH_TEST); // 开启深度测试
+	// 开启深度测试
+	glEnable(GL_DEPTH_TEST); 
 
 	float deltaTime = 0;
 	float lastFrame = static_cast<float>(glfwGetTime());
+
+
+	/*----------------------------------------------------
+		Part Render Loop
+	----------------------------------------------------*/
+
 
     // 绘制循环
     while (!glfwWindowShouldClose(window))
@@ -163,9 +179,9 @@ int main()
 		// 清除深度缓冲及模板缓冲
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		// 渲染背景
-		//glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT);
+		//渲染背景
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
@@ -181,6 +197,27 @@ int main()
 		glm::mat4 viewMatrix = CurCamera->LookAt();
 
 
+		// 关闭面剔除
+		glDisable(GL_CULL_FACE);
+
+
+		/*----------------------------------------------------
+		Loop 场景
+		----------------------------------------------------*/
+
+		// Plan Model矩阵
+		glm::mat4 modelMatrixFloor = glm::mat4(1.0f);
+
+		// 绘制Plan
+		SingleTexShader->Use();
+
+		Plan->Draw(SingleTexShader, modelMatrixFloor, viewMatrix, projectionMatrix);
+
+
+
+		// 开启面剔除
+		glEnable(GL_CULL_FACE);
+
 
 		/*----------------------------------------------------
 		Loop 光源
@@ -195,19 +232,7 @@ int main()
 
 		LightObj->Draw(SingleColorShader, modelMatrixLight, viewMatrix, projectionMatrix);
 
-
-
-		/*----------------------------------------------------
-		Loop 场景
-		----------------------------------------------------*/
-
-		// Plan Model矩阵
-		glm::mat4 modelMatrixFloor = glm::mat4(1.0f);
-
-		// 绘制Plan
-		SingleTexShader->Use();
-
-		Plan->Draw(SingleTexShader, modelMatrixFloor, viewMatrix, projectionMatrix);
+		
 
 
 		/*----------------------------------------------------
@@ -227,6 +252,14 @@ int main()
 
 		// 绘制模型
 		Obj->Draw(ModelPhongShader, modelMatrixObj, viewMatrix, projectionMatrix);
+
+
+		modelMatrixObj = glm::mat4(1.0f);
+		modelMatrixObj = glm::translate(modelMatrixObj, cubePositions[1]);
+		modelMatrixObj = glm::scale(modelMatrixObj, glm::vec3(3.0f));
+
+		SingleTexShader->Use();
+		Cube->Draw(SingleTexShader, modelMatrixObj, viewMatrix, projectionMatrix);
 
 
 		/*----------------------------------------------------
