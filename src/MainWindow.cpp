@@ -138,9 +138,11 @@ int main()
 
 
 	// 模型Shader及静态参数
-	//Shader* ModelPhongShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
+	Shader* ModelPhongShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
 
-	Shader* ModelPhongShader = new Shader("shader/Geometry/NormalExplode.vs", "shader/Geometry/NormalExplode.fs", "shader/Geometry/NormalExplode.gs");
+	//Shader* ModelNormalShader = new Shader("shader/Geometry/NormalShow.vs", "shader/Geometry/NormalShow.fs", "shader/Geometry/NormalShow.gs"); // 绘制法线shader
+
+	//Shader* ModelPhongShader = new Shader("shader/Geometry/NormalExplode.vs", "shader/Geometry/NormalExplode.fs", "shader/Geometry/NormalExplode.gs"); // 法线爆破Shader
 
 	ModelPhongShader->Use();
 	// 平行光参数
@@ -406,7 +408,7 @@ int main()
 		ModelPhongShader->SetVec3("ViewPos", CurCamera->Pos);
 		ModelPhongShader->SetVec3("spotLight.position", CurCamera->Pos);
 		ModelPhongShader->SetVec3("spotLight.direction", CurCamera->Front);
-		ModelPhongShader->SetFloat("time", glfwGetTime());
+		//ModelPhongShader->SetFloat("time", glfwGetTime()); // 用于法线爆破的GShader
 
 		// 赋予天空盒纹理
 		glActiveTexture(GL_TEXTURE0 + 3); // 模型的漫反射, 高光, 镜面纹理分别占据了1-3号纹理位置, 因此需要将天空盒设置为4号纹理
@@ -415,6 +417,12 @@ int main()
 
 		// 绘制模型
 		Obj->Draw(ModelPhongShader, modelMatrixObj, viewMatrix, projectionMatrix);
+
+
+
+		// nanosuit Model法线显示
+		//ModelNormalShader->Use();
+		//Obj->Draw(ModelNormalShader, modelMatrixObj, viewMatrix, projectionMatrix);
 
 
 		// Cube Model矩阵
