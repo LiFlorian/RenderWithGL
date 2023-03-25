@@ -155,12 +155,12 @@ int main()
 
 
 	/*----------------------------------------------------
-		Part Render Target
+		Part Render Target & Post Processing
 	----------------------------------------------------*/
 
 
 
-	Shader* RTShader = new Shader("shader/RTRender.vs", "shader/RTRender.fs");
+	Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
 	RTShader->Use();
 	RTShader->SetInt("RT", 0);
 
@@ -372,7 +372,7 @@ int main()
 
 
 		/*----------------------------------------------------
-		Loop FBO处理及渲染至屏幕
+		Loop FBO处理及渲染至屏幕 & 后处理
 		----------------------------------------------------*/
 
 		
