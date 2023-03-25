@@ -138,7 +138,10 @@ int main()
 
 
 	// 模型Shader及静态参数
-	Shader* ModelPhongShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
+	//Shader* ModelPhongShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
+
+	Shader* ModelPhongShader = new Shader("shader/Geometry/NormalExplode.vs", "shader/Geometry/NormalExplode.fs", "shader/Geometry/NormalExplode.gs");
+
 	ModelPhongShader->Use();
 	// 平行光参数
 	ModelPhongShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
@@ -403,6 +406,7 @@ int main()
 		ModelPhongShader->SetVec3("ViewPos", CurCamera->Pos);
 		ModelPhongShader->SetVec3("spotLight.position", CurCamera->Pos);
 		ModelPhongShader->SetVec3("spotLight.direction", CurCamera->Front);
+		ModelPhongShader->SetFloat("time", glfwGetTime());
 
 		// 赋予天空盒纹理
 		glActiveTexture(GL_TEXTURE0 + 3); // 模型的漫反射, 高光, 镜面纹理分别占据了1-3号纹理位置, 因此需要将天空盒设置为4号纹理
