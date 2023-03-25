@@ -48,13 +48,17 @@ uniform SpotLight spotLight;
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
+    sampler2D texture_reflect1;
     float shininess;
 };
 uniform Material material;
 
+uniform samplerCube skybox;
+
 uniform vec3 ViewPos;
 
 // 函数声明
+vec3 calculate_reflectSkybox();
 vec3 calculate_paraLight(ParaLight lightInst, vec3 diffuseColor, vec3 specularColor);
 vec3 calculate_pointLight(PointLight lightInst, vec3 diffuseColor, vec3 specularColor);
 vec3 calculate_spotLight(SpotLight lightInst, vec3 diffuseColor, vec3 specularColor);
@@ -67,9 +71,22 @@ void main()
     vec3 result = calculate_paraLight(paraLight, diffuseColor, specularColor);
     result += calculate_pointLight(pointLight, diffuseColor, specularColor);
     // result += calculate_spotLight(spotLight, diffuseColor, specularColor);
+    result += calculate_reflectSkybox();
 
     FragColor = vec4(result, 1.0);
 } 
+
+vec3 calculate_reflectSkybox()
+{
+    vec3 reflectColor = vec3(texture(material.texture_reflect1, TexCoord));
+
+    vec3 I = normalize(FragPos - ViewPos);
+    vec3 R = reflect(I, normalize(Normal));
+
+    vec3 skyboxColor = texture(skybox, R).rgb;
+
+    return reflectColor * skyboxColor;
+}
 
 // 平行光
 vec3 calculate_paraLight(ParaLight lightInst, vec3 diffuseColor, vec3 specularColor)

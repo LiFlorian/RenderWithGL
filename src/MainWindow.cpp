@@ -158,7 +158,6 @@ int main()
 	ModelPhongShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 	ModelPhongShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
 	ModelPhongShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-
 	// 光泽度
 	ModelPhongShader->SetFloat("material.shininess", 32.0f);
 
@@ -404,6 +403,11 @@ int main()
 		ModelPhongShader->SetVec3("ViewPos", CurCamera->Pos);
 		ModelPhongShader->SetVec3("spotLight.position", CurCamera->Pos);
 		ModelPhongShader->SetVec3("spotLight.direction", CurCamera->Front);
+
+		// 赋予天空盒纹理
+		glActiveTexture(GL_TEXTURE0 + 3); // 模型的漫反射, 高光, 镜面纹理分别占据了1-3号纹理位置, 因此需要将天空盒设置为4号纹理
+		ModelPhongShader->SetInt("skybox", 3);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, SkyBoxTex);
 
 		// 绘制模型
 		Obj->Draw(ModelPhongShader, modelMatrixObj, viewMatrix, projectionMatrix);

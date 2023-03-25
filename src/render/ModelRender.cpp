@@ -95,6 +95,9 @@ MeshRender ModelRender::processMesh(aiMesh* mesh, const aiScene* scene)
 
 		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+		vector<Texture> reflectMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_reflect");
+		textures.insert(textures.end(), reflectMaps.begin(), reflectMaps.end());
 	}
 
 	return MeshRender(vertices, indices, textures);

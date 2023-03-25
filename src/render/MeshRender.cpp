@@ -86,6 +86,7 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 	{
 		unsigned int diffuseNr = 1;
 		unsigned int specularNr = 1;
+		unsigned int relfectNr = 1;
 
 		for (unsigned int i = 0; i < textures.size(); i++)
 		{
@@ -101,6 +102,10 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 			else if (name == "texture_specular")
 			{
 				number = std::to_string(specularNr++);
+			}
+			else if (name == "texture_reflect")
+			{
+				number = std::to_string(relfectNr++);
 			}
 
 			shader->SetInt(("material." + name + number).c_str(), i);
