@@ -50,11 +50,64 @@ int main()
 	// 创建场景相机
 	CurCamera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, mouse_callback); // 鼠标滑动回调
 	glfwSetScrollCallback(window, scroll_callback); // 鼠标滚轮回调
 
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	TexLoader = new TextureLoader();
+
+
+
+	/*----------------------------------------------------
+		Part 天空盒
+	----------------------------------------------------*/
+
+
+	std::vector<std::string> faceList =
+	{
+		"res/cubemap/right.jpg",
+		"res/cubemap/left.jpg",
+		"res/cubemap/top.jpg",
+		"res/cubemap/bottom.jpg",
+		"res/cubemap/front.jpg",
+		"res/cubemap/back.jpg",
+	};
+
+	unsigned int SkyBoxTex = TexLoader->LoadCubeMap(faceList);
+
+	Shader* SkyboxShader = new Shader("shader/SkyBox.vs", "shader/SkyBox.fs");
+	SkyboxShader->Use();
+	SkyboxShader->SetInt("skybox", 0);
+
+
+	// 绑定VAO
+	unsigned int SkyBoxVAO, SkyBoxVBO;
+	glGenVertexArrays(1, &SkyBoxVAO);
+	glBindVertexArray(SkyBoxVAO);
+
+	// 绑定VBO
+	glGenBuffers(1, &SkyBoxVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, SkyBoxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+
+	// 顶点位置
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+
+	/*----------------------------------------------------
+		Part 场景
+	----------------------------------------------------*/
+
+
+	Shader* SingleTexShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
+
+	// 平面
+	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
+	unsigned int PlanTex = TexLoader->LoadTexture((char*)"res/textures/metal.png");
+	Plan->AddCustomTexture(PlanTex, "InTex");
 
 
 	/*----------------------------------------------------
@@ -77,19 +130,6 @@ int main()
 	// 光源Obj
 	MeshRender* LightObj = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
 
-
-
-	/*----------------------------------------------------
-		Part 场景
-	----------------------------------------------------*/
-
-
-	Shader* SingleTexShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
-	
-	// 平面
-	MeshRender* Plan = new MeshRender(Plan_TexNormalVert, sizeof(Plan_TexNormalVert) / sizeof(float));
-	unsigned int PlanTex = TexLoader->LoadTexture((char*)"res/textures/metal.png");
-	Plan->AddCustomTexture(PlanTex, "InTex");
 
 
 	/*----------------------------------------------------
@@ -127,7 +167,7 @@ int main()
 	ModelRender* Obj = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
 
 
-	// 立方体Obj
+	//立方体Obj
 	MeshRender* Cube = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
 	unsigned int CubeTex = TexLoader->LoadTexture((char*)"res/textures/marble.jpg");
 	Cube->AddCustomTexture(CubeTex, "InTex");
@@ -224,7 +264,7 @@ int main()
 		Part Render Configuration
 	----------------------------------------------------*/
 
-	// 开启颜色混合
+	//// 开启颜色混合
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 使用src颜色的Alpha进行混合, src颜色即当前frag颜色, dest颜色即缓冲中的颜色
 
@@ -260,11 +300,11 @@ int main()
 		processInput(deltaTime, window);
 
 		// Projection矩阵
-		glm::mat4 projectionMatrix = glm::mat4(1.0f);
-		projectionMatrix = glm::perspective(glm::radians(CurCamera->Zoom), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f); // 45度FOV, 视口长宽比, 近平面0.1, 远屏幕100
+		glm::mat4 projectionMatrix = glm::perspective(glm::radians(CurCamera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f); // 45度FOV, 视口长宽比, 近平面0.1, 远屏幕100
 
 		// View矩阵
 		glm::mat4 viewMatrix = CurCamera->LookAt();
+
 
 
 		/*----------------------------------------------------
@@ -274,10 +314,46 @@ int main()
 
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
+
+
+		/*----------------------------------------------------
+		Loop 缓冲状态重置
+		----------------------------------------------------*/
+
+
 		glEnable(GL_DEPTH_TEST); // 开启深度测试
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 设置背景色
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除颜色及深度缓冲
+
+
+
+
+		/*----------------------------------------------------
+		Loop SkyBox
+		----------------------------------------------------*/
+
+
+		glDepthFunc(GL_LEQUAL);
+		glDepthMask(GL_FALSE);
+
+
+		SkyboxShader->Use();
+
+		// View矩阵
+		glm::mat4 viewMatrixSkybox = glm::mat4(glm::mat3(viewMatrix));
+		SkyboxShader->SetMat4("view", viewMatrixSkybox);
+		// Projection矩阵
+		SkyboxShader->SetMat4("projection", projectionMatrix);
+
+		glBindVertexArray(SkyBoxVAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, SkyBoxTex);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+
+		glDepthMask(GL_TRUE);
+		glDepthFunc(GL_LESS);
+
 
 
 		/*----------------------------------------------------
@@ -336,6 +412,7 @@ int main()
 		// Cube Model矩阵
 		modelMatrixObj = glm::mat4(1.0f);
 		modelMatrixObj = glm::translate(modelMatrixObj, cubePositions[1]);
+		modelMatrixObj = glm::scale(modelMatrixObj, glm::vec3(3.0f));
 		modelMatrixObj = glm::scale(modelMatrixObj, glm::vec3(3.0f));
 
 		SingleTexShader->Use();
@@ -470,7 +547,8 @@ void processInput(float deltaTime, GLFWwindow* window)
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 bool firstMouse = true;
-double lastX, lastY;
+float lastX = (float)SCR_WIDTH / 2.0;
+float lastY = (float)SCR_HEIGHT / 2.0;
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
 	float xpos = static_cast<float>(xposIn);
