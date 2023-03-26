@@ -26,7 +26,7 @@
     <ClCompile Include="src\render\RenderUtil.cpp" />
     <ClCompile Include="src\tool\glad.c" />
     <ClCompile Include="src\backup\Light.cpp" />
-    <ClCompile Include="src\MainWindow.cpp" />
+    <ClCompile Include="src\Scene\SceneSkybox.cpp" />
     <ClCompile Include="src\render\MeshRender.cpp" />
     <ClCompile Include="src\render\ModelRender.cpp" />
     <ClCompile Include="src\backup\RenderContext.cpp" />
@@ -37,9 +37,8 @@
   <ItemGroup>
     <ClInclude Include="src\render\FrameBuffer.h" />
     <ClInclude Include="src\obj\Camera.h" />
-    <ClInclude Include="src\Data.h" />
+    <ClInclude Include="src\Scene\Data.h" />
     <ClInclude Include="src\backup\Light.h" />
-    <ClInclude Include="src\MainWindow.h" />
     <ClInclude Include="src\render\MeshRender.h" />
     <ClInclude Include="src\render\ModelRender.h" />
     <ClInclude Include="src\backup\RenderContext.h" />

@@ -12,29 +12,32 @@
 
 #include "Data.h"
 
-#include "MainWindow.h"
-#include "render/Shader.h"
-#include "render/ModelRender.h"
-#include "obj/Camera.h"
-#include "tool/TextureLoader.h"
-#include "render/FrameBuffer.h"
-#include "render/SimpleRender.h"
+#include "../render/Shader.h"
+#include "../render/ModelRender.h"
+#include "../obj/Camera.h"
+#include "../tool/TextureLoader.h"
+#include "../render/FrameBuffer.h"
+#include "../render/SimpleRender.h"
 
 
-// 窗口尺寸定义
+// 常数定义
 const float SCR_WIDTH = 1920;
 const float SCR_HEIGHT = 1080;
 
+
+// 函数声明
+void InitGLFW();
+GLFWwindow* CreateWindow();
+
+// 窗口尺寸改变回调, 初始化时同样会执行
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 // 输入回调函数声明
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(float deltaTime, GLFWwindow* window);
 
-// 场景绘制循环函数声明
-void RenderSceneLoop();
-
-// 全局相机
+// 全局变量
 Camera* CurCamera;
 
 TextureLoader* TexLoader;
@@ -417,12 +420,6 @@ int main()
     // 退出程序
     glfwTerminate();
     return 0;
-}
-
-
-void RenderSceneLoop()
-{
-
 }
 
 

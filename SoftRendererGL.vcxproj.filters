@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\MainWindow.cpp">
+    <ClCompile Include="src\Scene\SceneSkybox.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\tool\glad.c">
@@ -59,10 +59,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\MainWindow.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Data.h">
+    <ClInclude Include="src\Scene\Data.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\backup\RenderContext.h">
