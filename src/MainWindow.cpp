@@ -204,11 +204,6 @@ int main()
 
 
 
-	Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
-	RTShader->Use();
-	RTShader->SetInt("RT", 0);
-
-
 	// 创建帧缓冲对象并绑定
 	unsigned int FBO;
 	glGenFramebuffers(1, &FBO);
@@ -217,36 +212,108 @@ int main()
 	// 生成帧缓冲附加纹理
 	unsigned int texColorBuffer;
 	glGenTextures(1, &texColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// 将它附加到当前绑定的帧缓冲对象
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+	// 无AA版本
+	//glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); // 将它附加到当前绑定的帧缓冲对象
+
+	// MSAA版本
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texColorBuffer);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texColorBuffer, 0); // 将它附加到当前绑定的帧缓冲对象
+
 
 
 	// 创建渲染缓冲对象并绑定
 	unsigned int RBO;
 	glGenRenderbuffers(1, &RBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	// 将渲染缓冲对象设置为帧缓冲对象的深度以及模板缓冲附件
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+	// 无AA版本
+	//glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+	//glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO); // 将渲染缓冲对象设置为帧缓冲对象的深度以及模板缓冲附件
+
+	// MSAA版本
+	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO); // 将渲染缓冲对象设置为帧缓冲对象的深度以及模板缓冲附件
+
 
 	// 检查帧缓冲对象完整性
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 	}
-
 	// 解绑帧缓冲对象操作
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+
+
+	// 创建MSAA后处理用的临时渲染FBO及其附加颜色纹理
+	unsigned int PostProcessFBO;
+	glGenFramebuffers(1, &PostProcessFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, PostProcessFBO);
+
+	// 生成帧缓冲附加纹理
+	unsigned int PostProcessTex;
+	glGenTextures(1, &PostProcessTex);
+
+	glBindTexture(GL_TEXTURE_2D, PostProcessTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostProcessTex, 0); // 将它附加到当前绑定的帧缓冲对象
+
+	// 检查帧缓冲对象完整性
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	}
+	// 解绑帧缓冲对象操作
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
+	//// 创建MSAA后处理用的临时渲染FBO及其附加颜色纹理
+	//unsigned int PostProcessFBO;
+	//glGenRenderbuffers(1, &PostProcessFBO);
+	//glBindFramebuffer(GL_FRAMEBUFFER, PostProcessFBO);
+
+	//unsigned int PostProcessTex;
+	//glGenTextures(1, &PostProcessTex);
+	//glBindTexture(GL_TEXTURE_2D, PostProcessTex);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostProcessTex, 0);
+
+	//// 检查帧缓冲对象完整性
+	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//{
+	//	std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	//}
+	//// 解绑帧缓冲对象操作
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
 	// 屏幕纹理渲染缓冲数据
+	Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
+	RTShader->Use();
+	RTShader->SetInt("RT", 0);
+
 	unsigned int quadVAO, quadVBO;
 
 	glGenVertexArrays(1, &quadVAO);
@@ -314,8 +381,9 @@ int main()
 		/*----------------------------------------------------
 		Loop 启用FBO
 		----------------------------------------------------*/
+		
 
-
+	
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
 
@@ -323,6 +391,7 @@ int main()
 		/*----------------------------------------------------
 		Loop 缓冲状态重置
 		----------------------------------------------------*/
+
 
 
 		glEnable(GL_DEPTH_TEST); // 开启深度测试
@@ -468,27 +537,33 @@ int main()
 		Loop FBO处理及渲染至屏幕 & 后处理
 		----------------------------------------------------*/
 
-		
+
+		// MSAA纹理复制
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, PostProcessFBO);
+		glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
 		// 切换至默认Buffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); 
-
-		// 禁用深度缓冲
-		glDisable(GL_DEPTH_TEST);
 
 		// 清除默认Buffer的缓冲并设置背景色
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// 禁用深度缓冲
+		glDisable(GL_DEPTH_TEST);
+
+
 
 		// 渲染屏幕纹理
 		RTShader->Use();
-
-		glBindVertexArray(quadVAO);
-
+	
 		// 开启线框绘制模式, Debug用
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, PostProcessTex);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
