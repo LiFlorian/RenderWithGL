@@ -22,6 +22,7 @@
     <ClCompile Include="src\render\FrameBuffer.cpp" />
     <ClCompile Include="src\backup\Backup.cpp" />
     <ClCompile Include="src\obj\Camera.cpp" />
+    <ClCompile Include="src\render\SimpleRender.cpp" />
     <ClCompile Include="src\render\RenderUtil.cpp" />
     <ClCompile Include="src\tool\glad.c" />
     <ClCompile Include="src\backup\Light.cpp" />
@@ -42,6 +43,7 @@
     <ClInclude Include="src\render\MeshRender.h" />
     <ClInclude Include="src\render\ModelRender.h" />
     <ClInclude Include="src\backup\RenderContext.h" />
+    <ClInclude Include="src\render\SimpleRender.h" />
     <ClInclude Include="src\render\RenderUtil.h" />
     <ClInclude Include="src\render\Shader.h" />
     <ClInclude Include="src\tool\stb_image.h" />

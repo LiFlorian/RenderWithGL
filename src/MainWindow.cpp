@@ -18,6 +18,7 @@
 #include "obj/Camera.h"
 #include "tool/TextureLoader.h"
 #include "render/FrameBuffer.h"
+#include "render/SimpleRender.h"
 
 
 // 窗口尺寸定义
@@ -29,6 +30,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(float deltaTime, GLFWwindow* window);
+
+// 场景绘制循环函数声明
+void RenderSceneLoop();
 
 // 全局相机
 Camera* CurCamera;
@@ -76,26 +80,14 @@ int main()
 		"res/cubemap/back.jpg",
 	};
 
-	unsigned int SkyBoxTex = TexLoader->LoadCubeMap(faceList);
-
 	Shader* SkyboxShader = new Shader("shader/SkyBox.vs", "shader/SkyBox.fs");
 	SkyboxShader->Use();
 	SkyboxShader->SetInt("skybox", 0);
 
-
-	// 绑定VAO
-	unsigned int SkyBoxVAO, SkyBoxVBO;
-	glGenVertexArrays(1, &SkyBoxVAO);
-	glBindVertexArray(SkyBoxVAO);
-
-	// 绑定VBO
-	glGenBuffers(1, &SkyBoxVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, SkyBoxVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-
-	// 顶点位置
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	vector<int> SkyboxAttriDivisor{3};
+	SimpleRender* SkyboxRender = new SimpleRender(SkyboxAttriDivisor, skyboxVertices, sizeof(skyboxVertices));
+	unsigned int SkyboxTex = TexLoader->LoadCubeMap(faceList);
+	SkyboxRender->BindCubeMap(SkyboxTex);
 
 
 	/*----------------------------------------------------
@@ -119,14 +111,10 @@ int main()
 	// 定义常数
 	glm::vec3 LightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 
-
-
 	// 光源Shader及静态参数
 	Shader* SingleColorShader = new Shader("shader/SingleColor.vs", "shader/SingleColor.fs");
 	SingleColorShader->Use();
 	SingleColorShader->SetVec3("InColor", glm::vec3(1.0f));
-
-
 
 	// 光源Obj
 	MeshRender* LightObj = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
@@ -140,9 +128,7 @@ int main()
 
 	// 模型Shader及静态参数
 	Shader* ModelPhongShader = new Shader("shader/Blinn_Phong_Model.vs", "shader/Blinn_Phong_Model.fs");
-
 	//Shader* ModelNormalShader = new Shader("shader/Geometry/NormalShow.vs", "shader/Geometry/NormalShow.fs", "shader/Geometry/NormalShow.gs"); // 绘制法线shader
-
 	//Shader* ModelPhongShader = new Shader("shader/Geometry/NormalExplode.vs", "shader/Geometry/NormalExplode.fs", "shader/Geometry/NormalExplode.gs"); // 法线爆破Shader
 
 	ModelPhongShader->Use();
@@ -183,6 +169,7 @@ int main()
 		Part Render Target & Post Processing
 	----------------------------------------------------*/
 
+
 	// 屏幕纹理渲染缓冲数据
 	Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
 	RTShader->Use();
@@ -194,20 +181,9 @@ int main()
 	// 后处理需要的FrameBuffer
 	FrameBuffer* PostProcess_FB = new FrameBuffer(false, SCR_WIDTH, SCR_HEIGHT);
 
-	unsigned int quadVAO, quadVBO;
-
-	glGenVertexArrays(1, &quadVAO);
-	glBindVertexArray(quadVAO);
-
-	glGenBuffers(1, &quadVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
+	// 铺屏四边形
+	vector<int> ScreenQuadAttri{2, 2};
+	SimpleRender* ScreenQuadRender = new SimpleRender(ScreenQuadAttri, quadVertices, sizeof(quadVertices));
 
 
 
@@ -266,6 +242,7 @@ int main()
 	
 		glBindFramebuffer(GL_FRAMEBUFFER, MSAA_FB->FBO);
 
+
 		glEnable(GL_DEPTH_TEST); // 开启深度测试
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 设置背景色
@@ -289,10 +266,7 @@ int main()
 		SkyboxShader->SetMat4("view", viewMatrixSkybox);
 		SkyboxShader->SetMat4("projection", projectionMatrix);
 
-		glBindVertexArray(SkyBoxVAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, SkyBoxTex);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
+		SkyboxRender->Draw(false);
 
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);
@@ -307,11 +281,10 @@ int main()
 		// 关闭面剔除
 		glDisable(GL_CULL_FACE);
 
-		// Plan Model矩阵
-		glm::mat4 modelMatrixFloor = glm::mat4(1.0f);
-
 		// 绘制Plan
 		SingleTexShader->Use();
+
+		glm::mat4 modelMatrixFloor = glm::mat4(1.0f); // Plan Model矩阵
 
 		Plan->Draw(SingleTexShader, modelMatrixFloor, viewMatrix, projectionMatrix);
 
@@ -323,12 +296,13 @@ int main()
 		Loop 光源
 		----------------------------------------------------*/
 
+		
+		SingleColorShader->Use();
+
 		// 光源Model矩阵
 		glm::mat4 modelMatrixLight = glm::mat4(1.0f);
 		modelMatrixLight = glm::translate(modelMatrixLight, LightPos);
 		modelMatrixLight = glm::scale(modelMatrixLight, glm::vec3(0.2f));
-
-		SingleColorShader->Use();
 
 		LightObj->Draw(SingleColorShader, modelMatrixLight, viewMatrix, projectionMatrix);
 
@@ -352,7 +326,7 @@ int main()
 		// 赋予天空盒纹理
 		glActiveTexture(GL_TEXTURE0 + 3); // 模型的漫反射, 高光, 镜面纹理分别占据了1-3号纹理位置, 因此需要将天空盒设置为4号纹理
 		ModelPhongShader->SetInt("skybox", 3);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, SkyBoxTex);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, SkyboxTex);
 
 		// 绘制模型
 		Obj->Draw(ModelPhongShader, modelMatrixObj, viewMatrix, projectionMatrix);
@@ -423,17 +397,9 @@ int main()
 
 		// 渲染屏幕纹理
 		RTShader->Use();
-	
-		// 开启线框绘制模式, Debug用
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		glBindVertexArray(quadVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, PostProcess_FB->TexAttached);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-
+		ScreenQuadRender->BindTexture(PostProcess_FB->TexAttached);
+		ScreenQuadRender->Draw(false);
 
 
 
@@ -449,6 +415,12 @@ int main()
     // 退出程序
     glfwTerminate();
     return 0;
+}
+
+
+void RenderSceneLoop()
+{
+
 }
 
 
