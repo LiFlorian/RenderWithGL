@@ -138,7 +138,7 @@ int main()
 
 
 	// 模型Shader及静态参数
-	Shader* ModelPhongShader = new Shader("shader/Phong_Model.vs", "shader/Phong_Model.fs");
+	Shader* ModelPhongShader = new Shader("shader/Blinn_Phong_Model.vs", "shader/Blinn_Phong_Model.fs");
 
 	//Shader* ModelNormalShader = new Shader("shader/Geometry/NormalShow.vs", "shader/Geometry/NormalShow.fs", "shader/Geometry/NormalShow.gs"); // 绘制法线shader
 
