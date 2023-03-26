@@ -286,29 +286,6 @@ int main()
 
 
 
-	//// 创建MSAA后处理用的临时渲染FBO及其附加颜色纹理
-	//unsigned int PostProcessFBO;
-	//glGenRenderbuffers(1, &PostProcessFBO);
-	//glBindFramebuffer(GL_FRAMEBUFFER, PostProcessFBO);
-
-	//unsigned int PostProcessTex;
-	//glGenTextures(1, &PostProcessTex);
-	//glBindTexture(GL_TEXTURE_2D, PostProcessTex);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostProcessTex, 0);
-
-	//// 检查帧缓冲对象完整性
-	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//{
-	//	std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-	//}
-	//// 解绑帧缓冲对象操作
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
 	// 屏幕纹理渲染缓冲数据
 	Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
 	RTShader->Use();

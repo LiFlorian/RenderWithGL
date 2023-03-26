@@ -293,29 +293,3 @@
 //glStencilMask(0xFF);
 //glEnable(GL_DEPTH_TEST);
 //glDisable(GL_STENCIL_TEST);
-
-
-
-//// 创建MSAA后处理用的临时渲染FBO及其附加颜色纹理
-//unsigned int PostProcessFBO;
-//glGenFramebuffers(1, &PostProcessFBO);
-//glBindFramebuffer(GL_FRAMEBUFFER, PostProcessFBO);
-//
-//// 生成帧缓冲附加纹理
-//unsigned int PostProcessTex;
-//glGenTextures(1, &PostProcessTex);
-//
-//glBindTexture(GL_TEXTURE_2D, PostProcessTex);
-//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//glBindTexture(GL_TEXTURE_2D, 0);
-//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostProcessTex, 0); // 将它附加到当前绑定的帧缓冲对象
-//
-//// 检查帧缓冲对象完整性
-//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-//{
-//	std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-//}
-//// 解绑帧缓冲对象操作
-//glBindFramebuffer(GL_FRAMEBUFFER, 0);
