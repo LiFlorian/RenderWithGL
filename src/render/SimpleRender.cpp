@@ -111,12 +111,23 @@ void SimpleRender::Draw(bool bPolygonMode)
 {
 	ActiveBindedTextures();
 
-	glBindVertexArray(VAO);
-
 	// 绘制线框模式, 调试用
 	if (bPolygonMode) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
+
+	DrawShape();
+
+	if (bPolygonMode)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+}
+
+// 仅绘制顶点
+void SimpleRender::DrawShape()
+{
+	glBindVertexArray(VAO);
 
 	if (IndicesNum > 0)
 	{
@@ -128,9 +139,4 @@ void SimpleRender::Draw(bool bPolygonMode)
 	}
 
 	glBindVertexArray(0);
-
-	if (bPolygonMode)
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
 }

@@ -21,6 +21,8 @@ public:
 
 	void Draw(bool bPolygonMode);
 
+	void DrawShape();
+
 
 public:
 	unsigned int VAO;

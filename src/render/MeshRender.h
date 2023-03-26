@@ -56,6 +56,9 @@ public:
 	virtual void Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
 	void AddCustomTexture(unsigned int TexID, string ShaderTarget);
+
+	void DrawShape();
+
 private:
 	
 	unsigned int VAO, VBO, EBO;

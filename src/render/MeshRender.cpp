@@ -140,6 +140,21 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 	int projectionLoc = glGetUniformLocation(shader->ID, "projection");
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+	DrawShape();
+}
+
+void MeshRender::AddCustomTexture(unsigned int TexID, string ShaderTarget)
+{
+	CustomTex customTex;
+	customTex.TexID = TexID;
+	customTex.ShaderTarget = ShaderTarget;
+
+	customTexList.push_back(customTex);
+}
+
+// 仅绘制顶点
+void MeshRender::DrawShape()
+{
 	// 绘制网格
 	glBindVertexArray(VAO);
 
@@ -156,12 +171,4 @@ void MeshRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4
 	glBindVertexArray(0);
 }
 
-void MeshRender::AddCustomTexture(unsigned int TexID, string ShaderTarget)
-{
-	CustomTex customTex;
-	customTex.TexID = TexID;
-	customTex.ShaderTarget = ShaderTarget;
-
-	customTexList.push_back(customTex);
-}
 

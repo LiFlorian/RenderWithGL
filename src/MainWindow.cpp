@@ -185,6 +185,9 @@ int main()
 	vector<int> ScreenQuadAttri{2, 2};
 	SimpleRender* ScreenQuadRender = new SimpleRender(ScreenQuadAttri, quadVertices, sizeof(quadVertices));
 
+	// 离屏shader绑定对应Texture
+	ScreenQuadRender->BindTexture(PostProcess_FB->TexAttached);
+
 
 
 	/*----------------------------------------------------
@@ -324,8 +327,8 @@ int main()
 		//ModelPhongShader->SetFloat("time", glfwGetTime()); // 用于法线爆破的GShader
 
 		// 赋予天空盒纹理
-		glActiveTexture(GL_TEXTURE0 + 3); // 模型的漫反射, 高光, 镜面纹理分别占据了1-3号纹理位置, 因此需要将天空盒设置为4号纹理
 		ModelPhongShader->SetInt("skybox", 3);
+		glActiveTexture(GL_TEXTURE0 + 3); // 模型的漫反射, 高光, 镜面纹理分别占据了1-3号纹理位置, 因此需要将天空盒设置为4号纹理
 		glBindTexture(GL_TEXTURE_CUBE_MAP, SkyboxTex);
 
 		// 绘制模型
@@ -398,7 +401,6 @@ int main()
 		// 渲染屏幕纹理
 		RTShader->Use();
 
-		ScreenQuadRender->BindTexture(PostProcess_FB->TexAttached);
 		ScreenQuadRender->Draw(false);
 
 

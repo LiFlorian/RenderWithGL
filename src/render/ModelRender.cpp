@@ -145,3 +145,11 @@ void ModelRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat
 		meshes[i].Draw(shader, model, view, projection);
 	}
 }
+
+void ModelRender::DrawShape()
+{
+	for (unsigned int i = 0; i < meshes.size(); i++)
+	{
+		meshes[i].DrawShape();
+	}
+}

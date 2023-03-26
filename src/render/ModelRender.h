@@ -24,6 +24,8 @@ public:
 
 	void Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
+	void DrawShape();
+
 private:
 	/*  模型数据  */
 	vector<MeshRender> meshes;
