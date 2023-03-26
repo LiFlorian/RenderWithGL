@@ -248,3 +248,33 @@ void Shader::SetMat4(const std::string& name, glm::mat4 value) const
 	int matLoc = glGetUniformLocation(ID, name.c_str());
 	glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(value));
 }
+
+// 平行光参数
+void Shader::SetParaLightParams()
+{
+	SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+	SetVec3("paraLight.ambient", glm::vec3(0.02f, 0.02f, 0.02f));
+	SetVec3("paraLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
+	SetVec3("paraLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
+}
+
+// 点光源静态参数
+void Shader::SetPointLightParams(glm::vec3 LightPos)
+{
+	SetVec3("pointLight.position", LightPos);
+	SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+	SetVec3("pointLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	SetVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	SetFloat("pointLight.constant", 1.0f);
+	SetFloat("pointLight.linear", 0.09f);
+	SetFloat("pointLight.quadratic", 0.032f);
+}
+
+// 投射光静态参数
+void Shader::SetSpotLightParams()
+{
+	SetVec3("spotLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+	SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
+	SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+}

@@ -17,6 +17,7 @@
 #include "render/ModelRender.h"
 #include "obj/Camera.h"
 #include "tool/TextureLoader.h"
+#include "render/FrameBuffer.h"
 
 
 // 窗口尺寸定义
@@ -145,31 +146,13 @@ int main()
 	//Shader* ModelPhongShader = new Shader("shader/Geometry/NormalExplode.vs", "shader/Geometry/NormalExplode.fs", "shader/Geometry/NormalExplode.gs"); // 法线爆破Shader
 
 	ModelPhongShader->Use();
-	// 平行光参数
-	ModelPhongShader->SetVec3("paraLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-	ModelPhongShader->SetVec3("paraLight.ambient", glm::vec3(0.02f, 0.02f, 0.02f));
-	ModelPhongShader->SetVec3("paraLight.diffuse", glm::vec3(0.05f, 0.05f, 0.05f));
-	ModelPhongShader->SetVec3("paraLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
-	// 点光源静态参数
-	ModelPhongShader->SetVec3("pointLight.position", LightPos);
-	ModelPhongShader->SetVec3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-	ModelPhongShader->SetVec3("pointLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ModelPhongShader->SetVec3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	ModelPhongShader->SetFloat("pointLight.constant", 1.0f);
-	ModelPhongShader->SetFloat("pointLight.linear", 0.09f);
-	ModelPhongShader->SetFloat("pointLight.quadratic", 0.032f);
-	// 投射光静态参数
-	ModelPhongShader->SetVec3("spotLight.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-	ModelPhongShader->SetVec3("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-	ModelPhongShader->SetFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
-	ModelPhongShader->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-	// 光泽度
 	ModelPhongShader->SetFloat("material.shininess", 32.0f);
-
+	ModelPhongShader->SetParaLightParams();
+	ModelPhongShader->SetPointLightParams(LightPos);
+	ModelPhongShader->SetSpotLightParams();
 
 	// 模型Obj
 	ModelRender* Obj = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
-
 
 	//立方体Obj
 	MeshRender* Cube = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
@@ -196,100 +179,20 @@ int main()
 	Window->AddCustomTexture(WindowTex, "InTex");
 
 
-
-
 	/*----------------------------------------------------
 		Part Render Target & Post Processing
 	----------------------------------------------------*/
-
-
-
-	// 创建帧缓冲对象并绑定
-	unsigned int FBO;
-	glGenFramebuffers(1, &FBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-	// 生成帧缓冲附加纹理
-	unsigned int texColorBuffer;
-	glGenTextures(1, &texColorBuffer);
-
-	// 无AA版本
-	//glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); // 将它附加到当前绑定的帧缓冲对象
-
-	// MSAA版本
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texColorBuffer);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
-	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texColorBuffer, 0); // 将它附加到当前绑定的帧缓冲对象
-
-
-
-	// 创建渲染缓冲对象并绑定
-	unsigned int RBO;
-	glGenRenderbuffers(1, &RBO);
-
-	// 无AA版本
-	//glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-	//glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO); // 将渲染缓冲对象设置为帧缓冲对象的深度以及模板缓冲附件
-
-	// MSAA版本
-	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-	glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO); // 将渲染缓冲对象设置为帧缓冲对象的深度以及模板缓冲附件
-
-
-	// 检查帧缓冲对象完整性
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-	}
-	// 解绑帧缓冲对象操作
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-
-	// 创建MSAA后处理用的临时渲染FBO及其附加颜色纹理
-	unsigned int PostProcessFBO;
-	glGenFramebuffers(1, &PostProcessFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, PostProcessFBO);
-
-	// 生成帧缓冲附加纹理
-	unsigned int PostProcessTex;
-	glGenTextures(1, &PostProcessTex);
-
-	glBindTexture(GL_TEXTURE_2D, PostProcessTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PostProcessTex, 0); // 将它附加到当前绑定的帧缓冲对象
-
-	// 检查帧缓冲对象完整性
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-	}
-	// 解绑帧缓冲对象操作
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
 
 	// 屏幕纹理渲染缓冲数据
 	Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
 	RTShader->Use();
 	RTShader->SetInt("RT", 0);
+
+	// MSAA预处理需要的FrameBuffer
+	FrameBuffer* MSAA_FB = new FrameBuffer(true, 4, SCR_WIDTH, SCR_HEIGHT);
+
+	// 后处理需要的FrameBuffer
+	FrameBuffer* PostProcess_FB = new FrameBuffer(false, SCR_WIDTH, SCR_HEIGHT);
 
 	unsigned int quadVAO, quadVBO;
 
@@ -312,7 +215,7 @@ int main()
 		Part Render Configuration
 	----------------------------------------------------*/
 
-	//// 开启颜色混合
+	// 开启颜色混合
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 使用src颜色的Alpha进行混合, src颜色即当前frag颜色, dest颜色即缓冲中的颜色
 
@@ -356,26 +259,17 @@ int main()
 
 
 		/*----------------------------------------------------
-		Loop 启用FBO
+		Loop 启用FBO并重置buffer状态
 		----------------------------------------------------*/
 		
 
 	
-		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-
-
-		/*----------------------------------------------------
-		Loop 缓冲状态重置
-		----------------------------------------------------*/
-
-
+		glBindFramebuffer(GL_FRAMEBUFFER, MSAA_FB->FBO);
 
 		glEnable(GL_DEPTH_TEST); // 开启深度测试
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 设置背景色
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除颜色及深度缓冲
-
 
 
 
@@ -390,10 +284,9 @@ int main()
 
 		SkyboxShader->Use();
 
-		// View矩阵
+		// 天空盒特殊View矩阵
 		glm::mat4 viewMatrixSkybox = glm::mat4(glm::mat3(viewMatrix));
 		SkyboxShader->SetMat4("view", viewMatrixSkybox);
-		// Projection矩阵
 		SkyboxShader->SetMat4("projection", projectionMatrix);
 
 		glBindVertexArray(SkyBoxVAO);
@@ -407,7 +300,7 @@ int main()
 
 
 		/*----------------------------------------------------
-		Loop 场景
+		Loop 地板
 		----------------------------------------------------*/
 
 
@@ -465,7 +358,6 @@ int main()
 		Obj->Draw(ModelPhongShader, modelMatrixObj, viewMatrix, projectionMatrix);
 
 
-
 		// nanosuit Model法线显示
 		//ModelNormalShader->Use();
 		//Obj->Draw(ModelNormalShader, modelMatrixObj, viewMatrix, projectionMatrix);
@@ -485,7 +377,7 @@ int main()
 		Loop Alpha Blending
 		----------------------------------------------------*/
 
-		// 透明物体排序
+
 
 		// 根据相机距离进行排序
 		std::map<float, glm::vec3> sorted;
@@ -494,7 +386,6 @@ int main()
 			float distance = glm::length(CurCamera->Pos - Windows_Pos[i]);
 			sorted[distance] = Windows_Pos[i];
 		}
-
 
 		SingleTexShader->Use();
 
@@ -516,8 +407,8 @@ int main()
 
 
 		// MSAA纹理复制
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, PostProcessFBO);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, MSAA_FB->FBO);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, PostProcess_FB->FBO);
 		glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		// 切换至默认Buffer
@@ -530,8 +421,6 @@ int main()
 		// 禁用深度缓冲
 		glDisable(GL_DEPTH_TEST);
 
-
-
 		// 渲染屏幕纹理
 		RTShader->Use();
 	
@@ -540,10 +429,18 @@ int main()
 
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, PostProcessTex);
+		glBindTexture(GL_TEXTURE_2D, PostProcess_FB->TexAttached);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
+
+
+
+
+
+		/*----------------------------------------------------
+		Loop End
+		----------------------------------------------------*/
 
         glfwSwapBuffers(window);
         glfwPollEvents();

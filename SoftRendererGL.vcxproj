@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\render\FrameBuffer.cpp" />
     <ClCompile Include="src\backup\Backup.cpp" />
     <ClCompile Include="src\obj\Camera.cpp" />
     <ClCompile Include="src\render\RenderUtil.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="src\tool\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\render\FrameBuffer.h" />
     <ClInclude Include="src\obj\Camera.h" />
     <ClInclude Include="src\Data.h" />
     <ClInclude Include="src\backup\Light.h" />

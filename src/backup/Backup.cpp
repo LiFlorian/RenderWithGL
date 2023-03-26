@@ -293,3 +293,69 @@
 //glStencilMask(0xFF);
 //glEnable(GL_DEPTH_TEST);
 //glDisable(GL_STENCIL_TEST);
+
+
+
+
+
+/*----------------------------------------------------
+		无AA版本离屏渲染准备流程
+----------------------------------------------------*/
+
+//// 创建帧缓冲对象并绑定
+//unsigned int FBO;
+//glGenFramebuffers(1, &FBO);
+//glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+//
+//// 生成帧缓冲附加纹理
+//unsigned int texColorBuffer;
+//glGenTextures(1, &texColorBuffer);
+//
+//// 无AA版本
+//glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//glBindTexture(GL_TEXTURE_2D, 0);
+//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); // 将它附加到当前绑定的帧缓冲对象
+//
+//
+//
+//// 创建渲染缓冲对象并绑定
+//unsigned int RBO;
+//glGenRenderbuffers(1, &RBO);
+//
+//// 无AA版本
+//glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+//glBindRenderbuffer(GL_RENDERBUFFER, 0);
+//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO); // 将渲染缓冲对象设置为帧缓冲对象的深度以及模板缓冲附件
+//
+//
+//// 检查帧缓冲对象完整性
+//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+//{
+//	std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+//}
+//// 解绑帧缓冲对象操作
+//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//
+//
+//// 屏幕纹理渲染缓冲数据
+//Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
+//RTShader->Use();
+//RTShader->SetInt("RT", 0);
+//
+//unsigned int quadVAO, quadVBO;
+//
+//glGenVertexArrays(1, &quadVAO);
+//glBindVertexArray(quadVAO);
+//
+//glGenBuffers(1, &quadVBO);
+//glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+//glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+//
+//glEnableVertexAttribArray(0);
+//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+//glEnableVertexAttribArray(1);
+//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
