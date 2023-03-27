@@ -23,6 +23,8 @@
 // 常数定义
 const float SCR_WIDTH = 1920;
 const float SCR_HEIGHT = 1080;
+const GLuint SHADOW_WIDTH = 1024;
+const GLuint SHADOW_HEIGHT = 1024;
 
 
 // 函数声明
@@ -44,6 +46,12 @@ TextureLoader* TexLoader;
 
 int main()
 {
+	/*----------------------------------------------------
+		Part Init
+	----------------------------------------------------*/
+
+
+
 	InitGLFW();
 
 	GLFWwindow* window = CreateWindow();
@@ -68,28 +76,96 @@ int main()
 
 
 
+
 	/*----------------------------------------------------
 		Part Prepare Scene
 	----------------------------------------------------*/
+
 
 
 	unsigned int WoodTex = TexLoader->LoadTexture((char*)"res/textures/wood.png");
 
 	vector<int> normalTexVertDivisor{ 3, 3, 2 };
 
-
-	Shader* SingleTexShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
-	SingleTexShader->Use();
-	SingleTexShader->SetInt("InTex", 0);
-
+	// 地板
 	SimpleRender* FloorRender = new SimpleRender(normalTexVertDivisor, ShadowPlan, sizeof(ShadowPlan));
 	FloorRender->BindTexture(WoodTex);
 
+	// 立方体
 	SimpleRender* CubeRender = new SimpleRender(normalTexVertDivisor, UnitCube, sizeof(UnitCube));
 	CubeRender->BindTexture(WoodTex);
 
 	float deltaTime = 0;
 	float lastFrame = static_cast<float>(glfwGetTime());
+
+
+
+	/*----------------------------------------------------
+		Part Depth Map
+	----------------------------------------------------*/
+
+
+
+	GLuint depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+
+	GLuint depthMap;
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
+	/*----------------------------------------------------
+		Part RenderQuad
+	----------------------------------------------------*/
+
+
+	// 铺屏四边形
+	vector<int> ScreenQuadAttri{2, 2};
+	SimpleRender* ScreenQuadRender = new SimpleRender(ScreenQuadAttri, quadVertices, sizeof(quadVertices));
+
+	// 离屏shader绑定对应Texture
+	ScreenQuadRender->BindTexture(depthMap);
+
+
+
+	/*----------------------------------------------------
+		Part Shader
+	----------------------------------------------------*/
+
+
+	Shader* DepthMapShader = new Shader("shader/Shadow/DepthMap.vs", "shader/Shadow/DepthMap.fs");
+
+	GLfloat near_plane = 1.0f, far_plane = 7.5f;
+	glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	glm::mat4 lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+	DepthMapShader->Use();
+	DepthMapShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+
+	Shader* SingleTexShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
+	SingleTexShader->Use();
+	SingleTexShader->SetInt("InTex", 0);
+
+
+	Shader* DepthShowShader = new Shader("shader/Shadow/DepthShow.vs", "shader/Shadow/DepthShow.fs");
+	DepthShowShader->Use();
+	DepthShowShader->SetInt("RT", 0);
 
 
 	/*----------------------------------------------------
@@ -137,40 +213,95 @@ int main()
 
 
 		/*----------------------------------------------------
-		Loop 场景渲染
+		Loop 深度图更新
 		----------------------------------------------------*/
 
 
-		SingleTexShader->Use();
-		SingleTexShader->SetMat4("view", viewMatrix);
-		SingleTexShader->SetMat4("projection", projectionMatrix);
-		
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+
+		DepthMapShader->Use();
+
 
 		glm::mat4 model = glm::mat4(1.0f);
-		SingleTexShader->SetMat4("model", model);
-
-		FloorRender->Draw(false);
-
+		DepthMapShader->SetMat4("model", model);
+		FloorRender->DrawShape();
 
 		// cubes
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
 		model = glm::scale(model, glm::vec3(0.5f));
-		SingleTexShader->SetMat4("model", model);
-		CubeRender->Draw(false);
+		DepthMapShader->SetMat4("model", model);
+		CubeRender->DrawShape();
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
 		model = glm::scale(model, glm::vec3(0.5f));
-		SingleTexShader->SetMat4("model", model);
-		CubeRender->Draw(false);
+		DepthMapShader->SetMat4("model", model);
+		CubeRender->DrawShape();
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
 		model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 		model = glm::scale(model, glm::vec3(0.25));
-		SingleTexShader->SetMat4("model", model);
-		CubeRender->Draw(false);
+		DepthMapShader->SetMat4("model", model);
+		CubeRender->DrawShape();
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+		/*----------------------------------------------------
+		Loop 深度图绘制
+		----------------------------------------------------*/
+
+
+
+		DepthShowShader->Use();
+		ScreenQuadRender->Draw(false);
+
+
+
+		/*----------------------------------------------------
+		Loop 场景渲染
+		----------------------------------------------------*/
+
+
+		//SingleTexShader->Use();
+		//SingleTexShader->SetMat4("view", viewMatrix);
+		//SingleTexShader->SetMat4("projection", projectionMatrix);
+		//
+
+		//model = glm::mat4(1.0f);
+		//SingleTexShader->SetMat4("model", model);
+
+		//FloorRender->Draw(false);
+
+
+		//// cubes
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+		//model = glm::scale(model, glm::vec3(0.5f));
+		//SingleTexShader->SetMat4("model", model);
+		//CubeRender->Draw(false);
+
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+		//model = glm::scale(model, glm::vec3(0.5f));
+		//SingleTexShader->SetMat4("model", model);
+		//CubeRender->Draw(false);
+
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+		//model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+		//model = glm::scale(model, glm::vec3(0.25));
+		//SingleTexShader->SetMat4("model", model);
+		//CubeRender->Draw(false);
 
 
 
