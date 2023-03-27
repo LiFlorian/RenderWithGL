@@ -92,8 +92,11 @@ int main()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	// 超出深度贴图大小的范围, 设置为GL_CLAMP_TO_BORDER并赋予边界颜色
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
@@ -151,28 +154,22 @@ int main()
 
 
 	glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
-
-
-	Shader* DepthMapShader = new Shader("shader/Shadow/DepthMap.vs", "shader/Shadow/DepthMap.fs");
-
 	GLfloat near_plane = 1.0f, far_plane = 7.5f;
+
 	glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 	glm::mat4 lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
+	Shader* DepthMapShader = new Shader("shader/Shadow/DepthMap.vs", "shader/Shadow/DepthMap.fs");
 	DepthMapShader->Use();
 	DepthMapShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 
+	// 显示正交深度图用
+	Shader* OrthoDepthShowShader = new Shader("shader/Shadow/OrthoDepthShow.vs", "shader/Shadow/OrthoDepthShow.fs");
+	OrthoDepthShowShader->Use();
+	OrthoDepthShowShader->SetInt("depthMap", 0);
 
-	Shader* SingleTexShader = new Shader("shader/SingleTex.vs", "shader/SingleTex.fs");
-	SingleTexShader->Use();
-	SingleTexShader->SetInt("InTex", 0);
-
-	// 显示深度图用
-	Shader* DepthShowShader = new Shader("shader/Shadow/DepthShow.vs", "shader/Shadow/DepthShow.fs");
-	DepthShowShader->Use();
-	DepthShowShader->SetInt("RT", 0);
-
+	// 绘制带阴影的场景用
 	Shader* BlinnPhongShadow = new Shader("shader/Shadow/Blinn_Phong_Shadow.vs", "shader/Shadow/Blinn_Phong_Shadow.fs");
 	BlinnPhongShadow->Use();
 	BlinnPhongShadow->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
@@ -229,6 +226,9 @@ int main()
 		Loop 深度图更新
 		----------------------------------------------------*/
 
+		
+		// 开启正面剔除, 防止深度偏移导致的漂浮现象
+		glCullFace(GL_FRONT);
 
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -267,6 +267,9 @@ int main()
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// 还原剔除设置, 准备正常
+		glCullFace(GL_BACK);
+
 
 
 		/*----------------------------------------------------
@@ -275,7 +278,7 @@ int main()
 
 
 
-		//DepthShowShader->Use();
+		//OrthoDepthShowShader->Use();
 		//ScreenQuadRender->Draw(false);
 
 
