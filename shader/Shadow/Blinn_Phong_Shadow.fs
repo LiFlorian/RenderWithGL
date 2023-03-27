@@ -15,24 +15,6 @@ uniform sampler2D shadowMap;
 uniform vec3 ViewPos;
 uniform vec3 LightPos;
 
-// 函数声明
-// vec3 calculate_paraLight(ParaLight lightInst, vec3 diffuseColor, vec3 specularColor);
-// vec3 calculate_pointLight(PointLight lightInst, vec3 diffuseColor, vec3 specularColor);
-// vec3 calculate_spotLight(SpotLight lightInst, vec3 diffuseColor, vec3 specularColor);
-
-float ShadowCalculation(vec4 fragPosLightSpace)
-{
-    // 执行透视除法
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    
-    // [-1, 1]线性映射至[0, 1]
-    projCoords = projCoords * 0.5 + 0.5;
-
-    float closestDepth = texture(shadowMap, projCoords.xy).r;
-
-    return projCoords.z > closestDepth  ? 1.0 : 0.0;
-}
-
 void main()
 {
     vec3 texColor = texture(diffuseTex, fs_in.TexCoord).rgb;
@@ -56,8 +38,19 @@ void main()
     spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
     vec3 specular = spec * lightColor;   
 
-    // 计算阴影
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace);       
+    // 执行透视除法
+    vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
+    // [-1, 1]线性映射至[0, 1]
+    projCoords = projCoords * 0.5 + 0.5;
+
+    // 对深度贴图采样得到光源空间的深度
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+
+    // 应用阴影偏移, 防止出现明暗条纹
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float shadow = projCoords.z - bias > closestDepth  ? 1.0 : 0.0;  
+
+    // 计算包含阴影的颜色值
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * texColor;    
 
     FragColor = vec4(lighting, 1.0f);
