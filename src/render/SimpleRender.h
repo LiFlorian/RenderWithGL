@@ -8,12 +8,18 @@
 class SimpleRender
 {
 public:
+	
+	SimpleRender();
 
 	SimpleRender(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize);
 
 	SimpleRender(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize);
 
 	~SimpleRender();
+
+	void BindVertexList(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize);
+
+	void BindVertexList(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize);
 
 	void BindTexture(unsigned int Texture);
 

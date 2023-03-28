@@ -7,7 +7,42 @@
 
 #include "SimpleRender.h"
 
+SimpleRender::SimpleRender()
+{
+
+}
+
+SimpleRender::SimpleRender(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize)
+{
+	BindVertexList(AttriDivisor, VertexList, VertexSize);
+}
+
 SimpleRender::SimpleRender(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize)
+{
+	BindVertexList(AttriDivisor, VertexList, VertexSize, IndicesList, IndicesSize);
+}
+
+void SimpleRender::BindVertexList(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize)
+{
+	// 创建VAO并绑定
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	// 创建VBO并把顶点数组复制到缓冲中供OpenGL使用
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, VertexSize, VertexList, GL_STATIC_DRAW);
+
+	int totalAttriNum = SetVertexAttri(AttriDivisor);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	unsigned singleVertSize = totalAttriNum * sizeof(float);
+	VertNum = VertexSize / singleVertSize;
+}
+
+void SimpleRender::BindVertexList(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize, unsigned int IndicesList[], unsigned int IndicesSize)
 {
 	// 创建VAO并绑定
 	glGenVertexArrays(1, &VAO);
@@ -32,26 +67,6 @@ SimpleRender::SimpleRender(std::vector<int> AttriDivisor, float VertexList[], un
 	VertNum = VertexSize / singleVertSize;
 
 	IndicesNum = IndicesSize / sizeof(float);
-}
-
-SimpleRender::SimpleRender(std::vector<int> AttriDivisor, float VertexList[], unsigned int VertexSize)
-{
-	// 创建VAO并绑定
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	// 创建VBO并把顶点数组复制到缓冲中供OpenGL使用
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, VertexSize, VertexList, GL_STATIC_DRAW);
-
-	int totalAttriNum = SetVertexAttri(AttriDivisor);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	unsigned singleVertSize = totalAttriNum * sizeof(float);
-	VertNum = VertexSize / singleVertSize;
 }
 
 
