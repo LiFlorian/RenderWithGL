@@ -63,7 +63,13 @@
     <ClCompile Include="src\Scene\PointShadow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Scene\TextureTrick.cpp">
+    <ClCompile Include="src\Scene\NormalTextureTrick.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\GBufferScene.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\GBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -102,6 +108,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\render\SimpleRender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render\GBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

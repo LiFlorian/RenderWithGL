@@ -19,14 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\render\GBuffer.cpp" />
     <ClCompile Include="src\render\FrameBuffer.cpp" />
     <ClCompile Include="src\backup\Backup.cpp" />
     <ClCompile Include="src\obj\Camera.cpp" />
     <ClCompile Include="src\render\SimpleRender.cpp" />
     <ClCompile Include="src\render\RenderUtil.cpp" />
+    <ClCompile Include="src\Scene\GBufferScene.cpp" />
     <ClCompile Include="src\Scene\ParaShadow.cpp" />
     <ClCompile Include="src\Scene\PointShadow.cpp" />
-    <ClCompile Include="src\Scene\TextureTrick.cpp" />
+    <ClCompile Include="src\Scene\NormalTextureTrick.cpp" />
     <ClCompile Include="src\tool\glad.c" />
     <ClCompile Include="src\backup\Light.cpp" />
     <ClCompile Include="src\Scene\SceneSkybox.cpp" />
@@ -38,6 +40,7 @@
     <ClCompile Include="src\tool\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\render\GBuffer.h" />
     <ClInclude Include="src\render\FrameBuffer.h" />
     <ClInclude Include="src\obj\Camera.h" />
     <ClInclude Include="src\Scene\Data.h" />

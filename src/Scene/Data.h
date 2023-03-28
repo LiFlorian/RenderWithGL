@@ -336,5 +336,18 @@ float ShadowPlan[] = {
 	 25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 };
 
+GLfloat GBufferQuadVertices[] = {
+	// Positions        // Texture Coords
+	-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+	1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+	1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+};
+
+unsigned int GBufferQuadIndices[] = {
+	0, 1, 2, // 第一个三角形
+	1, 2, 3  // 第二个三角形
+};
+
 
 
