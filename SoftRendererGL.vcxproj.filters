@@ -57,7 +57,10 @@
     <ClCompile Include="src\render\SimpleRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Scene\ShadowWoodBox.cpp">
+    <ClCompile Include="src\Scene\ParaShadow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\PointShadow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

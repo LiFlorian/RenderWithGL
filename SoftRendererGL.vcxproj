@@ -24,7 +24,8 @@
     <ClCompile Include="src\obj\Camera.cpp" />
     <ClCompile Include="src\render\SimpleRender.cpp" />
     <ClCompile Include="src\render\RenderUtil.cpp" />
-    <ClCompile Include="src\Scene\ShadowWoodBox.cpp" />
+    <ClCompile Include="src\Scene\ParaShadow.cpp" />
+    <ClCompile Include="src\Scene\PointShadow.cpp" />
     <ClCompile Include="src\tool\glad.c" />
     <ClCompile Include="src\backup\Light.cpp" />
     <ClCompile Include="src\Scene\SceneSkybox.cpp" />
