@@ -26,9 +26,28 @@ float ShadowCalculation(vec3 fragPos)
     closestDepth *= far_plane;
     // Now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
-    // Now test for shadows
-    float bias = 0.05; // We use a much larger bias since depth is now in [near_plane, far_plane] range
-    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+    // 应用PCF优化阴影锯齿
+    float shadow = 0.0;
+    float bias = 0.05; 
+    float samples = 4.0;
+    float offset = 0.1;
+    for(float x = -offset; x < offset; x += offset / (samples * 0.5))
+    {
+        for(float y = -offset; y < offset; y += offset / (samples * 0.5))
+        {
+            for(float z = -offset; z < offset; z += offset / (samples * 0.5))
+            {
+                float closestDepth = texture(depthCubeMap, fragToLight + vec3(x, y, z)).r; 
+                closestDepth *= far_plane; 
+                if(currentDepth - bias > closestDepth)
+                {
+                    shadow += 1.0;
+                }
+            }
+        }
+    }
+    shadow /= (samples * samples * samples);
 
     return shadow;
 }
