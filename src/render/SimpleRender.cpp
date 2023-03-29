@@ -139,6 +139,23 @@ void SimpleRender::Draw(bool bPolygonMode)
 	}
 }
 
+void SimpleRender::Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection)
+{
+	// Model矩阵
+	int modelLoc = glGetUniformLocation(shader->ID, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+	// View矩阵
+	int viewLoc = glGetUniformLocation(shader->ID, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+	// Projection矩阵
+	int projectionLoc = glGetUniformLocation(shader->ID, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+	DrawShape();
+}
+
 // 仅绘制顶点
 void SimpleRender::DrawShape()
 {

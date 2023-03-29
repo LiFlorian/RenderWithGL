@@ -29,6 +29,7 @@
     <ClCompile Include="src\Scene\ParaShadow.cpp" />
     <ClCompile Include="src\Scene\PointShadow.cpp" />
     <ClCompile Include="src\Scene\NormalTextureTrick.cpp" />
+    <ClCompile Include="src\Scene\SSAOScene.cpp" />
     <ClCompile Include="src\tool\glad.c" />
     <ClCompile Include="src\backup\Light.cpp" />
     <ClCompile Include="src\Scene\SceneSkybox.cpp" />
@@ -38,6 +39,7 @@
     <ClCompile Include="src\render\Shader.cpp" />
     <ClCompile Include="src\tool\stb_image_wrap.cpp" />
     <ClCompile Include="src\tool\TextureLoader.cpp" />
+    <ClCompile Include="src\render\SSAOKernel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render\GBuffer.h" />
@@ -53,6 +55,7 @@
     <ClInclude Include="src\render\Shader.h" />
     <ClInclude Include="src\tool\stb_image.h" />
     <ClInclude Include="src\tool\TextureLoader.h" />
+    <ClInclude Include="src\render\SSAOKernel.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -2,6 +2,7 @@
 
 #include<iostream>
 #include <vector>
+#include "Shader.h"
 
 
 
@@ -28,6 +29,8 @@ public:
 	void Draw(bool bPolygonMode);
 
 	void DrawShape();
+
+	virtual void Draw(Shader* shader, glm::mat4 model, glm::mat4 view, glm::mat4 projection);
 
 
 public:
