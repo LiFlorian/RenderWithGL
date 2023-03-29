@@ -253,9 +253,33 @@ int main()
 		//glBindTexture(GL_TEXTURE_2D, GBufferInst->gColorSpec);
 
 		//DebugQuadRender->Draw(false);
+
+
+
+		/*------------------------------------------------------------------------------------------------------------------
+			Loop Light Obj Forward Draw Pass
+		--------------------------------------------------------------------------------------------------------------------*/
+
+
+		// 复制GBuffer深度缓冲至当前帧缓冲
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, GBufferInst->ID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+		glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		
-		
+		SingleColorShader->Use();
+
+		for (GLuint i = 0; i < lightPositions.size(); i++)
+		{
+			SingleColorShader->SetVec3("InColor", lightColors[i]);
+
+			modelMatrix = glm::mat4(1.0f);
+			modelMatrix = glm::translate(modelMatrix, lightPositions[i]);
+			modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f));
+
+			LightRender->Draw(SingleColorShader, modelMatrix, viewMatrix, projectionMatrix);
+		}
 
 
 		/*----------------------------------------------------
