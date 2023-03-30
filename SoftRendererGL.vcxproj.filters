@@ -81,6 +81,9 @@
     <ClCompile Include="src\Scene\PBRScene.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\render\SphereRender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Scene\Data.h">
@@ -123,6 +126,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\render\SSAOKernel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render\SphereRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,11 +20,14 @@
 #include "../render/SimpleRender.h"
 #include "../render/GBuffer.h"
 #include "../render/SSAOKernel.h"
+#include "../render/SphereRender.h"
 
 
 // 常数定义
 const float SCR_WIDTH = 1920;
 const float SCR_HEIGHT = 1080;
+const float NEAR_PLAN = 0.1f;
+const float FAR_PLAN = 100.0f;
 
 
 // 函数声明
@@ -82,81 +85,45 @@ int main()
 	RTShader->SetInt("RT", 0);
 
 
-	/*----------------------------------------------------
-		Part G-Buffer
-	----------------------------------------------------*/
-
-
-	GBuffer* GBufferInst = new GBuffer(SCR_WIDTH, SCR_HEIGHT);
-
-	// 绘制GBuffer所需Shader
-	Shader* GBufferGenShader = new Shader("shader/SSAO/SSAOGBufferGen.vs", "shader/SSAO/SSAOGBufferGen.fs");
-	GBufferGenShader->Use();
-	GBufferGenShader->SetVec3("InColor", glm::vec3(0.9f));
-	GBufferGenShader->SetBool("bInverseNormal", 0);
-
-
-	// 铺屏四边形, 绘制屏幕纹理用
-	vector<int> ScreenQuadAttri{ 3, 2 };
-	SimpleRender* ScreenQuadRender = new SimpleRender(ScreenQuadAttri, GBufferQuadVertices, sizeof(GBufferQuadVertices), GBufferQuadIndices, sizeof(GBufferQuadIndices));
-
-
-
-	/*----------------------------------------------------
-		Part SSAO
-	----------------------------------------------------*/
-
-
-	GLuint KernelSize = 64;
-	GLuint KernelNoiseSize = 4;
-	SSAOKernel* SSAOKernelInst = new SSAOKernel(KernelSize, KernelNoiseSize); // SSAO样本生成
-
-
-	// 基于GBuffer采样并生成SSAO纹理
-	Shader* SSAOGenShader = new Shader("shader/SSAO/SSAOGen.vs", "shader/SSAO/SSAOGen.fs");
-	SSAOGenShader->Use();
-	SSAOGenShader->SetInt("kernelSize", KernelSize);
-	SSAOGenShader->SetInt("noiseSize", KernelNoiseSize);
-	SSAOGenShader->SetFloat("Screen_Width", SCR_WIDTH);
-	SSAOGenShader->SetFloat("Screen_Height", SCR_HEIGHT);
-
-	FrameBuffer* SSAOBuffer = new FrameBuffer(false, SCR_WIDTH, SCR_HEIGHT, GL_RED);
-
-
-	// 对SSAO纹理进行模糊消除噪声
-	Shader* SSAOBlurShader = new Shader("shader/SSAO/SSAOBlur.vs", "shader/SSAO/SSAOBlur.fs");
-	FrameBuffer* SSAOBlurBuffer = new FrameBuffer(false, SCR_WIDTH, SCR_HEIGHT, GL_RED);
-
-
-	// 渲染Obj用的Shader, 整合SSAO的Blinn-Phong计算
-	Shader* SSAOBlinnShader = new Shader("shader/SSAO/SSAO_Blinn_Phong.vs", "shader/SSAO/SSAO_Blinn_Phong.fs");
-
-
 
 	/*----------------------------------------------------
 		Part 光源
 	----------------------------------------------------*/
 
-	// 光源Shader及静态参数
+	vector<glm::vec3> lightPositions{
+		glm::vec3(-10.0f,  10.0f, 10.0f),
+		glm::vec3(10.0f,  10.0f, 10.0f),
+		glm::vec3(-10.0f, -10.0f, 10.0f),
+		glm::vec3(10.0f, -10.0f, 10.0f),
+	};
+
+	vector<glm::vec3> lightColors{
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f)
+	};
+
+
 	Shader* SingleColorShader = new Shader("shader/SingleColor.vs", "shader/SingleColor.fs");
 	SingleColorShader->Use();
-	SingleColorShader->SetVec3("InColor", glm::vec3(1.0f));
-
-	// 光源Obj
-	MeshRender* LightRender = new MeshRender(Cube_NormalTexVert, sizeof(Cube_NormalTexVert) / sizeof(float));
 
 
 	/*----------------------------------------------------
 		Part Obj
 	----------------------------------------------------*/
 
+	// 模型排列数据
+	int nrRows = 7;
+	int nrColumns = 7;
+	float spacing = 2.5;
 
-	// 模型Obj
-	ModelRender* NanosuitRender = new ModelRender((char*)"res/model/nanosuit/nanosuit.obj");
+	SphereRender* Sphere = new SphereRender();
 
-	// 地板Obj
-	vector<int> FloorCubeAttri{ 3, 3, 2 };
-	SimpleRender* FloorRender = new SimpleRender(FloorCubeAttri, Cube_NormalTexVert, sizeof(Cube_NormalTexVert));
+	Shader* PBRShader = new Shader("shader/PBR/PBR.vs", "shader/PBR/PBR.fs");
+	PBRShader->Use();
+	PBRShader->SetVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	PBRShader->SetFloat("ao", 1.0f);
 
 
 	/*----------------------------------------------------
@@ -189,145 +156,77 @@ int main()
 		processInput(deltaTime, window);
 
 		// Projection矩阵
-		glm::mat4 projectionMatrix = glm::perspective(glm::radians(CurCamera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 50.0f); // 45度FOV, 视口长宽比, 近平面0.1, 远屏幕100
+		glm::mat4 projectionMatrix = glm::perspective(glm::radians(CurCamera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, NEAR_PLAN, FAR_PLAN); // 45度FOV, 视口长宽比, 近平面0.1, 远屏幕100
 		// View矩阵
 		glm::mat4 viewMatrix = CurCamera->LookAt();
 		// Model矩阵
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 
+		glEnable(GL_DEPTH_TEST);
 
-		/*------------------------------------------------------------------------------------------------------------------
-			Loop GBuffer Pass
-		--------------------------------------------------------------------------------------------------------------------*/
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, GBufferInst->ID);
-
-
-		glEnable(GL_DEPTH_TEST); // 开启深度测试
-
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // 设置背景色
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 清除颜色及深度缓冲
-
-		GBufferGenShader->Use();
-
-
-		modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0, -1.0f, 0.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(20.0f, 1.0f, 20.0f));
-		FloorRender->Draw(GBufferGenShader, modelMatrix, viewMatrix, projectionMatrix);
-
-
-		modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 5.0));
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
-		NanosuitRender->Draw(GBufferGenShader, modelMatrix, viewMatrix, projectionMatrix);
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-		glm::vec3 lightPos = glm::vec3(2.0, 4.0, -2.0);
-		glm::vec3 lightColor = glm::vec3(0.2, 0.2, 0.7);
-
-		/*--------------------------------------------------------------------------------------------------------------
-			Loop SSAO Buffer Gen
-		--------------------------------------------------------------------------------------------------------------*/
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, SSAOBuffer->FBO);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-
-		SSAOGenShader->Use();
-		SSAOGenShader->SetInt("gPosition", 0);
-		SSAOGenShader->SetInt("gNormal", 1);
-		SSAOGenShader->SetInt("texNoise", 2);
-
-		// 设置GBuffer纹理及Kernel随机旋转轴纹理
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, GBufferInst->gPosition);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, GBufferInst->gNormal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, SSAOKernelInst->NoiseTex);
-
-		// 设置Kernel采样点
-		for (GLuint i = 0; i < 64; ++i)
-		{
-			glUniform3fv(glGetUniformLocation(SSAOGenShader->ID, ("samples[" + std::to_string(i) + "]").c_str()), 1, &SSAOKernelInst->KernelList[i][0]);
-		}
-
-		glUniformMatrix4fv(glGetUniformLocation(SSAOGenShader->ID, "projection"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
-		ScreenQuadRender->Draw(false);
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-		/*--------------------------------------------------------------------------------------------------------------
-			Loop SSAO Buffer Blur
-		--------------------------------------------------------------------------------------------------------------*/
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, SSAOBlurBuffer->FBO);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-
-		SSAOBlurShader->Use();
-		SSAOBlurShader->SetInt("SSAOTex", 0);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, SSAOBuffer->TexAttached);
-
-		ScreenQuadRender->Draw(false);
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-		/*--------------------------------------------------------------------------------------------------------------
-			Loop Light Pass
-		--------------------------------------------------------------------------------------------------------------*/
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 重建深度缓冲
-		//glBindFramebuffer(GL_READ_FRAMEBUFFER, GBufferInst->ID);
-		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); 
-		//glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+		/*------------------------------------------------------------------------------------------------------------------
+			Loop Light Obj
+		--------------------------------------------------------------------------------------------------------------------*/
+
+		for (unsigned int i = 0; i < lightPositions.size(); ++i)
+		{
+			lightPositions[i] = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 3.0) * 3.0, 0.0, 0.0);
+		}
+
+		SingleColorShader->Use();
+
+		for (int i = 0; i < lightPositions.size(); i++)
+		{
+			SingleColorShader->SetVec3("InColor", lightColors[i]);
+
+			modelMatrix = glm::mat4(1.0f);
+			modelMatrix = glm::translate(modelMatrix, lightPositions[i]);
+			modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
+			Sphere->Draw(SingleColorShader, modelMatrix, viewMatrix, projectionMatrix);
+		}
 
 
-		SSAOBlinnShader->Use(); // 激活屏幕绘制Shader
-
-		SSAOBlinnShader->SetInt("gPositionDepth", 0);
-		SSAOBlinnShader->SetInt("gNormal", 1);
-		SSAOBlinnShader->SetInt("gAlbedo", 2);
-		SSAOBlinnShader->SetInt("ssao", 3);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, GBufferInst->gPosition);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, GBufferInst->gNormal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, GBufferInst->gColorSpec);
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, SSAOBlurBuffer->TexAttached);
+		/*--------------------------------------------------------------------------------------------------------------
+			Loop Render Obj
+		--------------------------------------------------------------------------------------------------------------*/
 
 
-		SSAOBlinnShader->SetVec3("light.Position", lightPos);
-		SSAOBlinnShader->SetVec3("light.Color", lightColor);
-		SSAOBlinnShader->SetFloat("light.Linear", 0.09f);
-		SSAOBlinnShader->SetFloat("light.Quadratic", 0.032f);
+		PBRShader->Use();
+		PBRShader->SetVec3("ViewPos", CurCamera->Pos);
+		for (unsigned int i = 0; i < lightPositions.size(); ++i)
+		{
+			PBRShader->SetVec3("lightPositions[" + std::to_string(i) + "]", lightPositions[i]);
+			PBRShader->SetVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+		}
 
+		// 绘制球体
+		for (int row = 0; row < nrRows; ++row)
+		{
+			// 从上到下金属度递增
+			PBRShader->SetFloat("metallic", (float)row / (float)nrRows);
 
-		ScreenQuadRender->Draw(false); // 绘制铺屏四边形
+			for (int col = 0; col < nrColumns; ++col)
+			{
+				// 从左到右粗糙度递增
+				PBRShader->SetFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
 
+				modelMatrix = glm::mat4(1.0f);
+				modelMatrix = glm::translate(modelMatrix, glm::vec3(
+					(col - (nrColumns / 2)) * spacing,
+					(row - (nrRows / 2)) * spacing,
+					0.0f
+				));
+
+				// 球体法线是在local空间生成的, 需要将其转换至World空间
+				PBRShader->SetMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(modelMatrix))));
+				
+				Sphere->Draw(PBRShader, modelMatrix, viewMatrix, projectionMatrix);
+			}
+		}
 
 
 

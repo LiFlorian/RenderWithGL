@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\render\SphereRender.cpp" />
     <ClCompile Include="src\render\GBuffer.cpp" />
     <ClCompile Include="src\render\FrameBuffer.cpp" />
     <ClCompile Include="src\backup\Backup.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="src\render\SSAOKernel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\render\SphereRender.h" />
     <ClInclude Include="src\render\GBuffer.h" />
     <ClInclude Include="src\render\FrameBuffer.h" />
     <ClInclude Include="src\obj\Camera.h" />
