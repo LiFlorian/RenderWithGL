@@ -118,12 +118,21 @@ int main()
 	int nrColumns = 7;
 	float spacing = 2.5;
 
+
+	GLuint AlbedoTex = TexLoader->LoadTexture((char*)"res/textures/sphere/albedo.png");
+	GLuint AOTex = TexLoader->LoadTexture((char*)"res/textures/sphere/ao.png");
+	GLuint MetallicTex = TexLoader->LoadTexture((char*)"res/textures/sphere/metallic.png");
+	GLuint NormalTex = TexLoader->LoadTexture((char*)"res/textures/sphere/normal.png");
+	GLuint RoughnessTex = TexLoader->LoadTexture((char*)"res/textures/sphere/roughness.png");
+
 	SphereRender* Sphere = new SphereRender();
 
-	Shader* PBRShader = new Shader("shader/PBR/PBR.vs", "shader/PBR/PBR.fs");
-	PBRShader->Use();
-	PBRShader->SetVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
-	PBRShader->SetFloat("ao", 1.0f);
+	Shader* PBRShader = new Shader("shader/PBR/PBR_Tex.vs", "shader/PBR/PBR_Tex.fs");
+
+	//Shader* PBRShader = new Shader("shader/PBR/PBR.vs", "shader/PBR/PBR.fs");
+	//PBRShader->Use();
+	//PBRShader->SetVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	//PBRShader->SetFloat("ao", 1.0f);
 
 
 	/*----------------------------------------------------
@@ -203,16 +212,33 @@ int main()
 			PBRShader->SetVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
 		}
 
+		PBRShader->SetInt("albedoTex", 0);
+		PBRShader->SetInt("aoTex", 1);
+		PBRShader->SetInt("metallicTex", 2);
+		PBRShader->SetInt("roughnessTex", 3);
+		PBRShader->SetInt("normalTex", 4);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, AlbedoTex);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, AOTex);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, MetallicTex);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, RoughnessTex);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, NormalTex);
+
 		// 绘制球体
 		for (int row = 0; row < nrRows; ++row)
 		{
 			// 从上到下金属度递增
-			PBRShader->SetFloat("metallic", (float)row / (float)nrRows);
+			//PBRShader->SetFloat("metallic", (float)row / (float)nrRows);
 
 			for (int col = 0; col < nrColumns; ++col)
 			{
 				// 从左到右粗糙度递增
-				PBRShader->SetFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
+				//PBRShader->SetFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
 
 				modelMatrix = glm::mat4(1.0f);
 				modelMatrix = glm::translate(modelMatrix, glm::vec3(
