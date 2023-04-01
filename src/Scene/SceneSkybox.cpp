@@ -85,7 +85,7 @@
 //
 //	Shader* SkyboxShader = new Shader("shader/SkyBox.vs", "shader/SkyBox.fs");
 //	SkyboxShader->Use();
-//	SkyboxShader->SetInt("skybox", 0);
+//	SkyboxShader->SetInt("skyboxTex", 0);
 //
 //	vector<int> SkyboxAttriDivisor{3};
 //	SimpleRender* SkyboxRender = new SimpleRender(SkyboxAttriDivisor, skyboxVertices, sizeof(skyboxVertices));
@@ -267,9 +267,7 @@
 //
 //		SkyboxShader->Use();
 //
-//		// 天空盒特殊View矩阵
-//		glm::mat4 viewMatrixSkybox = glm::mat4(glm::mat3(viewMatrix));
-//		SkyboxShader->SetMat4("view", viewMatrixSkybox);
+//		SkyboxShader->SetMat4("view", viewMatrix);
 //		SkyboxShader->SetMat4("projection", projectionMatrix);
 //
 //		SkyboxRender->Draw(false);

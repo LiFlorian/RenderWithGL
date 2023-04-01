@@ -21,6 +21,7 @@
 #include "../render/GBuffer.h"
 #include "../render/SSAOKernel.h"
 #include "../render/SphereRender.h"
+#include "../render/CubeMap.h"
 
 
 // 常数定义
@@ -107,6 +108,13 @@ int main()
 	Shader* SingleColorShader = new Shader("shader/SingleColor.vs", "shader/SingleColor.fs");
 	SingleColorShader->Use();
 
+	/*----------------------------------------------------
+		Part Skybox
+	----------------------------------------------------*/
+
+
+	Shader* SkyboxShader = new Shader("shader/SkyBox.vs", "shader/SkyBox.fs");
+
 
 	/*----------------------------------------------------
 		Part ERP Sample
@@ -115,10 +123,24 @@ int main()
 
 	GLuint ERPTex = TexLoader->LoadHDRTexture((char*)"res/hdr/newport_loft.hdr");
 
-	vector<int> PosNormalTexAttri{ 3, 3, 2 };
-	SimpleRender* CubeRender = new SimpleRender(PosNormalTexAttri, Cube_NormalTexVert, sizeof(Cube_NormalTexVert));
+	GLuint CaptureWidth = 512, CaptureHeight = 512;
+	CubeMap* ERPCubeMap = new CubeMap(CaptureWidth, CaptureHeight);
 
-	Shader* ERPSampleShader = new Shader("shader/PBR/IBL/ERPSample.vs", "shader/PBR/IBL/ERPSample.fs");
+	unsigned int captureFBO, captureRBO;
+	glGenFramebuffers(1, &captureFBO);
+	glGenRenderbuffers(1, &captureRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, CaptureWidth, CaptureHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	//Shader* ERPDrawShader = new Shader("shader/PBR/IBL/ERPDraw.vs", "shader/PBR/IBL/ERPDraw.fs");
+	Shader* ERPCaptureShader = new Shader("shader/PBR/IBL/ERPCapture.vs", "shader/PBR/IBL/ERPCapture.fs");
+
+	vector<int> PosNormalTexAttri{ 3, 3, 2 };
+	SimpleRender* UnitCubeRender = new SimpleRender(PosNormalTexAttri, UnitCube, sizeof(UnitCube));
 
 
 	/*----------------------------------------------------
@@ -176,9 +198,54 @@ int main()
 
 		glEnable(GL_DEPTH_TEST);
 
+
+
+		/*--------------------------------------------------------------------------------------------------------------
+			Loop ERP Sample
+		--------------------------------------------------------------------------------------------------------------*/
+
+		glViewport(0, 0, CaptureWidth, CaptureHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+
+		ERPCaptureShader->Use();
+		ERPCaptureShader->SetInt("equirectangularMap", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, ERPTex);
+
+		ERPCaptureShader->SetMat4("projection", ERPCubeMap->captureProjection);
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			ERPCaptureShader->SetMat4("view", ERPCubeMap->captureViews[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, ERPCubeMap->ID, 0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			UnitCubeRender->Draw();
+		}
+
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+		/*------------------------------------------------------------------------------------------------------------------
+			Loop Skybox
+		--------------------------------------------------------------------------------------------------------------------*/
+
+		glDepthFunc(GL_LEQUAL);
+
+
+		SkyboxShader->Use();
+		SkyboxShader->SetMat4("view", viewMatrix);
+		SkyboxShader->SetMat4("projection", projectionMatrix);
+		SkyboxShader->SetInt("skyboxTex", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, ERPCubeMap->ID);
+
+		UnitCubeRender->Draw();
+
+
+		glDepthFunc(GL_LESS);
 
 		/*------------------------------------------------------------------------------------------------------------------
 			Loop Light Obj
@@ -247,19 +314,19 @@ int main()
 		--------------------------------------------------------------------------------------------------------------*/
 
 
-		// 场景中渲染立方体直接查看ERP贴图
-		ERPSampleShader->Use();
-		ERPSampleShader->SetInt("equirectangularMap", 0);
+		//// 场景中渲染立方体直接查看ERP贴图
+		//ERPDrawShader->Use();
+		//ERPDrawShader->SetInt("equirectangularMap", 0);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, ERPTex);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, ERPTex);
 
-		modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(5, 5, 5));
-		ERPSampleShader->SetMat4("model", modelMatrix);
-		ERPSampleShader->SetMat4("view", viewMatrix);
-		ERPSampleShader->SetMat4("projection", projectionMatrix);
-		CubeRender->Draw(false);
+		//modelMatrix = glm::mat4(1.0f);
+		//modelMatrix = glm::scale(modelMatrix, glm::vec3(5, 5, 5));
+		//ERPDrawShader->SetMat4("model", modelMatrix);
+		//ERPDrawShader->SetMat4("view", viewMatrix);
+		//ERPDrawShader->SetMat4("projection", projectionMatrix);
+		//CubeRender->Draw(false);
 
 
 

@@ -31,7 +31,7 @@ public:
 
 	void BindCubeMap(unsigned int Texture);
 
-	void Draw(bool bPolygonMode);
+	void Draw(bool bPolygonMode = false);
 
 	void DrawShape();
 
