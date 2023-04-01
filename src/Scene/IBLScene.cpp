@@ -172,13 +172,13 @@ int main()
 
 
 	/*----------------------------------------------------
-		Part ERP Convolution
+		Part ERP Diffuse Convolution
 	----------------------------------------------------*/
 
 	GLuint ConvoWidth = 32, ConvoHeight = 32;
 	CubeMap* ERPConvoCubeMap = new CubeMap(ConvoWidth, ConvoHeight);
 
-	Shader* ERPConvoShader = new Shader("shader/PBR/IBL/ERPConv.vs", "shader/PBR/IBL/ERPConv.fs");
+	Shader* ERPDiffuseConvoShader = new Shader("shader/PBR/IBL/ERPDiffuseConv.vs", "shader/PBR/IBL/ERPDiffuseConv.fs");
 
 	unsigned int convoFBO, convoRBO;
 	glGenFramebuffers(1, &convoFBO);
@@ -197,15 +197,15 @@ int main()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-	ERPConvoShader->Use();
-	ERPConvoShader->SetInt("ERPCubeTex", 0);
+	ERPDiffuseConvoShader->Use();
+	ERPDiffuseConvoShader->SetInt("ERPCubeTex", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, ERPCubeMap->ID);
 
-	ERPConvoShader->SetMat4("projection", ERPConvoCubeMap->captureProjection);
+	ERPDiffuseConvoShader->SetMat4("projection", ERPConvoCubeMap->captureProjection);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		ERPConvoShader->SetMat4("view", ERPConvoCubeMap->captureViews[i]);
+		ERPDiffuseConvoShader->SetMat4("view", ERPConvoCubeMap->captureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, ERPConvoCubeMap->ID, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
