@@ -27,6 +27,7 @@
     <ClCompile Include="src\render\SimpleRender.cpp" />
     <ClCompile Include="src\render\RenderUtil.cpp" />
     <ClCompile Include="src\Scene\GBufferScene.cpp" />
+    <ClCompile Include="src\Scene\IBLScene.cpp" />
     <ClCompile Include="src\Scene\ParaShadow.cpp" />
     <ClCompile Include="src\Scene\PBRScene.cpp" />
     <ClCompile Include="src\Scene\PointShadow.cpp" />
