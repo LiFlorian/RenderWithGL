@@ -13,6 +13,8 @@ public:
 
 	unsigned int LoadCubeMap(std::vector<std::string> faceList);
 
+	unsigned int LoadHDRTexture(char* ImagePath);
+
 private:
 
 	std::map<char*, unsigned int> TexturePool;
