@@ -9,6 +9,7 @@ uniform samplerCube skyboxTex;
 void main()
 {
     vec3 sampleColor = texture(skyboxTex, sampleCoord).rgb;
+    // vec3 sampleColor = textureLod(skyboxTex, sampleCoord, 1.2).rgb; // MipMap版本
 
     // gamma校正
     sampleColor = sampleColor / (sampleColor + vec3(1.0));

@@ -127,7 +127,7 @@ int main()
 	vector<int> PosNormalTexAttri{ 3, 3, 2 };
 	SimpleRender* UnitCubeRender = new SimpleRender(PosNormalTexAttri, UnitCube, sizeof(UnitCube));
 
-	CubeMap* ERPCubeMap = new CubeMap(CaptureWidth, CaptureHeight);
+	CubeMap* CaptureCubeMap = new CubeMap(CaptureWidth, CaptureHeight);
 
 	//Shader* ERPDrawShader = new Shader("shader/PBR/IBL/ERPDraw.vs", "shader/PBR/IBL/ERPDraw.fs");
 	Shader* ERPCaptureShader = new Shader("shader/PBR/IBL/ERPCapture.vs", "shader/PBR/IBL/ERPCapture.fs");
@@ -145,8 +145,6 @@ int main()
 	// ERP采样
 	glViewport(0, 0, CaptureWidth, CaptureHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 	ERPCaptureShader->Use();
 	ERPCaptureShader->SetInt("equirectangularMap", 0);
@@ -154,11 +152,11 @@ int main()
 	glBindTexture(GL_TEXTURE_2D, ERPTex);
 
 	// 在立方体中心分别以六个viewMatrix各渲染一次, 这样就可以摘出立方体的六个面来
-	ERPCaptureShader->SetMat4("projection", ERPCubeMap->captureProjection);
+	ERPCaptureShader->SetMat4("projection", CaptureCubeMap->ProjectionMatrix);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		ERPCaptureShader->SetMat4("view", ERPCubeMap->captureViews[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, ERPCubeMap->ID, 0);
+		ERPCaptureShader->SetMat4("view", CaptureCubeMap->ViewMatrixList[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, CaptureCubeMap->ID, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		UnitCubeRender->Draw();
@@ -172,13 +170,13 @@ int main()
 
 
 	/*----------------------------------------------------
-		Part ERP Diffuse Convolution
+		Part Diffuse Convolution
 	----------------------------------------------------*/
 
 	GLuint ConvoWidth = 32, ConvoHeight = 32;
-	CubeMap* ERPConvoCubeMap = new CubeMap(ConvoWidth, ConvoHeight);
+	CubeMap* DiffuseConvoCubeMap = new CubeMap(ConvoWidth, ConvoHeight);
 
-	Shader* ERPDiffuseConvoShader = new Shader("shader/PBR/IBL/ERPDiffuseConv.vs", "shader/PBR/IBL/ERPDiffuseConv.fs");
+	Shader* DiffuseConvoShader = new Shader("shader/PBR/IBL/DiffuseConv.vs", "shader/PBR/IBL/DiffuseConv.fs");
 
 	unsigned int convoFBO, convoRBO;
 	glGenFramebuffers(1, &convoFBO);
@@ -194,19 +192,17 @@ int main()
 	// 卷积计算
 	glViewport(0, 0, ConvoWidth, ConvoHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, convoFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-	ERPDiffuseConvoShader->Use();
-	ERPDiffuseConvoShader->SetInt("ERPCubeTex", 0);
+	DiffuseConvoShader->Use();
+	DiffuseConvoShader->SetInt("ERPCubeTex", 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, ERPCubeMap->ID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, CaptureCubeMap->ID);
 
-	ERPDiffuseConvoShader->SetMat4("projection", ERPConvoCubeMap->captureProjection);
+	DiffuseConvoShader->SetMat4("projection", DiffuseConvoCubeMap->ProjectionMatrix);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		ERPDiffuseConvoShader->SetMat4("view", ERPConvoCubeMap->captureViews[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, ERPConvoCubeMap->ID, 0);
+		DiffuseConvoShader->SetMat4("view", DiffuseConvoCubeMap->ViewMatrixList[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, DiffuseConvoCubeMap->ID, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		UnitCubeRender->Draw();
@@ -218,6 +214,78 @@ int main()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+
+	/*----------------------------------------------------
+		Part Prefilter Map, 预滤波HDR环境贴图
+	----------------------------------------------------*/
+
+
+	GLuint PrefilterWidth = 128, PrefilterHeight = 128;
+	Shader* PrefilterShader = new Shader("shader/PBR/IBL/PrefilterHDR.vs", "shader/PBR/IBL/PrefilterHDR.fs");
+
+	unsigned int prefilterMap;
+	glGenTextures(1, &prefilterMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, PrefilterWidth, PrefilterHeight, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+	unsigned int prefilterFBO, prefilterRBO;
+	glGenFramebuffers(1, &prefilterFBO);
+	glGenRenderbuffers(1, &prefilterRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, prefilterFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, prefilterRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, PrefilterWidth, PrefilterHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, prefilterRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	// 卷积计算
+	glBindFramebuffer(GL_FRAMEBUFFER, prefilterFBO);
+
+	PrefilterShader->Use();
+	PrefilterShader->SetMat4("projection", CaptureCubeMap->ProjectionMatrix);
+
+	PrefilterShader->SetInt("ERPCubeTex", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, CaptureCubeMap->ID);
+
+	unsigned int maxMipLevels = 5;
+	for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
+	{
+		unsigned int mipWidth = PrefilterWidth * std::pow(0.5, mip);
+		unsigned int mipHeight = PrefilterHeight * std::pow(0.5, mip);
+
+		glViewport(0, 0, mipWidth, mipHeight);
+		glBindRenderbuffer(GL_RENDERBUFFER, prefilterRBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+
+		float roughness = (float)mip / (float)(maxMipLevels - 1);
+		PrefilterShader->SetFloat("roughness", roughness);
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			PrefilterShader->SetMat4("view", CaptureCubeMap->ViewMatrixList[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+			UnitCubeRender->Draw();
+		}
+	}
+
+
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 	/*----------------------------------------------------
@@ -295,7 +363,8 @@ int main()
 		SkyboxShader->SetMat4("projection", projectionMatrix);
 		SkyboxShader->SetInt("skyboxTex", 0);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, ERPCubeMap->ID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, CaptureCubeMap->ID);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 
 		UnitCubeRender->Draw();
 
@@ -332,7 +401,7 @@ int main()
 		IBLShader->Use();
 		IBLShader->SetInt("irradianceMap", 0);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, ERPConvoCubeMap->ID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, DiffuseConvoCubeMap->ID);
 
 		IBLShader->SetVec3("ViewPos", CurCamera->Pos);
 		for (unsigned int i = 0; i < lightPositions.size(); ++i)

@@ -31,9 +31,9 @@ void CubeMap::GenCubeMap()
 
 void CubeMap::GenMatrix()
 {
-	captureProjection = glm::perspective(glm::radians(90.0f), (GLfloat)Width / (GLfloat)Height, NearPlane, FarPlane);
+	ProjectionMatrix = glm::perspective(glm::radians(90.0f), (GLfloat)Width / (GLfloat)Height, NearPlane, FarPlane);
 
-	captureViews =
+	ViewMatrixList =
 	{
 	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
 	   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),

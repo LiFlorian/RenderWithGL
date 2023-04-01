@@ -22,9 +22,9 @@ public:
 
 	float FarPlane;
 
-	glm::mat4 captureProjection;
+	glm::mat4 ProjectionMatrix;
 
-	std::vector<glm::mat4> captureViews;
+	std::vector<glm::mat4> ViewMatrixList;
 
 public:
 
