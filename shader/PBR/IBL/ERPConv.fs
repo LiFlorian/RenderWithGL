@@ -35,7 +35,7 @@ void main()
         }
     }
 
-    irradiance = PI * irradiance * (1.0 / float(nrSamples));
+    irradiance = PI * irradiance * (1.0 / float(nrSamples)); // 疑问, 为何此处要除samples数量, 查询黎曼和相关计算方法
 
     FragColor = vec4(irradiance, 1.0);
 }
