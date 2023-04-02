@@ -21,9 +21,6 @@
     <ClCompile Include="src\tool\glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\backup\RenderContext.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\render\Shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -96,9 +93,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Scene\Data.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\backup\RenderContext.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\render\Shader.h">

@@ -39,7 +39,6 @@
     <ClCompile Include="src\Scene\SceneSkybox.cpp" />
     <ClCompile Include="src\render\MeshRender.cpp" />
     <ClCompile Include="src\render\ModelRender.cpp" />
-    <ClCompile Include="src\backup\RenderContext.cpp" />
     <ClCompile Include="src\render\Shader.cpp" />
     <ClCompile Include="src\tool\stb_image_wrap.cpp" />
     <ClCompile Include="src\tool\TextureLoader.cpp" />
@@ -56,7 +55,6 @@
     <ClInclude Include="src\backup\Light.h" />
     <ClInclude Include="src\render\MeshRender.h" />
     <ClInclude Include="src\render\ModelRender.h" />
-    <ClInclude Include="src\backup\RenderContext.h" />
     <ClInclude Include="src\render\SimpleRender.h" />
     <ClInclude Include="src\render\RenderUtil.h" />
     <ClInclude Include="src\render\Shader.h" />
