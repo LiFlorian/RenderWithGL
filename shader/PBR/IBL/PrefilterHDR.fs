@@ -4,7 +4,7 @@ out vec4 FragColor;
 
 in vec3 localPos;
 
-uniform samplerCube ERPCubeTex;
+uniform samplerCube EnvCubeMap;
 uniform float roughness;
 
 const float PI = 3.14159265359;
@@ -31,7 +31,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0);
         if(NdotL > 0.0)
         {
-            prefilteredColor += texture(ERPCubeTex, L).rgb * NdotL;
+            prefilteredColor += texture(EnvCubeMap, L).rgb * NdotL;
             totalWeight      += NdotL;
         }
     }

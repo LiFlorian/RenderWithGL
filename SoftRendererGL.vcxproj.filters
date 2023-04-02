@@ -87,7 +87,10 @@
     <ClCompile Include="src\Scene\IBLScene.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\CubeMap.cpp">
+    <ClCompile Include="src\buffer\TextureAllocator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\buffer\FrameObj.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,7 +140,10 @@
     <ClInclude Include="src\render\SphereRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\render\CubeMap.h">
+    <ClInclude Include="src\buffer\TextureAllocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\buffer\FrameObj.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

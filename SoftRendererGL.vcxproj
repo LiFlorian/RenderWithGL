@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\render\CubeMap.cpp" />
+    <ClCompile Include="src\buffer\FrameObj.cpp" />
     <ClCompile Include="src\render\SphereRender.cpp" />
     <ClCompile Include="src\render\GBuffer.cpp" />
     <ClCompile Include="src\render\FrameBuffer.cpp" />
@@ -44,9 +44,10 @@
     <ClCompile Include="src\tool\stb_image_wrap.cpp" />
     <ClCompile Include="src\tool\TextureLoader.cpp" />
     <ClCompile Include="src\render\SSAOKernel.cpp" />
+    <ClCompile Include="src\buffer\TextureAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\render\CubeMap.h" />
+    <ClInclude Include="src\buffer\FrameObj.h" />
     <ClInclude Include="src\render\SphereRender.h" />
     <ClInclude Include="src\render\GBuffer.h" />
     <ClInclude Include="src\render\FrameBuffer.h" />
@@ -62,6 +63,7 @@
     <ClInclude Include="src\tool\stb_image.h" />
     <ClInclude Include="src\tool\TextureLoader.h" />
     <ClInclude Include="src\render\SSAOKernel.h" />
+    <ClInclude Include="src\buffer\TextureAllocator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
