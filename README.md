@@ -6,7 +6,7 @@ backup文件夹仅开发过程中废弃代码备份用，无实际功能意义
 
 
 
-# 学习笔记：
+# 学习笔记
 
 ## PBR部分
 ### IBL预计算贴图
@@ -22,3 +22,9 @@ IBL是用预烘焙的环境贴图计算辐射，因此PBR方程中的积分项�
 
 3. BRDF积分预计算LUT(Texture_2D)  
 BRDF方程约分F项后, 取横坐标NdotV, 纵坐标roughness绘制所得的2D纹理, 与具体贴图环境无关
+
+
+# TODO List
+1. TextureLoader与TextureAllocator融合  
+2. RenderUtil去除, 对应功能合并至TextureAllocator
+3. 多种Render合并, 简化类数量并梳理继承关系
