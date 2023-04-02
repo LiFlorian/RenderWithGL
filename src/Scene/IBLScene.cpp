@@ -78,8 +78,8 @@ int main()
 
 
 	// 屏幕纹理渲染缓冲数据, 用于直接展示中间过程生成的各种纹理, Debug用
-	vector<int> DebugQuadAttri{ 2, 2 };
-	SimpleRender* DebugQuadRender = new SimpleRender(DebugQuadAttri, quadVertices, sizeof(quadVertices));
+	vector<int> QuadAttri{ 2, 2 };
+	SimpleRender* QuadRender = new SimpleRender(QuadAttri, quadVertices, sizeof(quadVertices));
 
 	Shader* RTShader = new Shader("shader/PostProcess/Primitive.vs", "shader/PostProcess/Primitive.fs");
 	RTShader->Use();
@@ -289,6 +289,52 @@ int main()
 
 
 	/*----------------------------------------------------
+		Part BRDF LUT
+	----------------------------------------------------*/
+
+	GLuint LUTWidth = 512, LUTHeight = 512;
+
+	Shader* LUTShader = new Shader("shader/PBR/IBL/BRDFLUT.vs", "shader/PBR/IBL/BRDFLUT.fs");
+
+	unsigned int brdfLUTTexture;
+	glGenTextures(1, &brdfLUTTexture);
+	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, LUTWidth, LUTHeight, 0, GL_RG, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	unsigned int LUTFBO, LUTRBO;
+	glGenFramebuffers(1, &LUTFBO);
+	glGenRenderbuffers(1, &LUTRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, LUTFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, LUTRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, LUTWidth, LUTHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, LUTRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	// 卷积计算
+	glViewport(0, 0, LUTWidth, LUTHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, LUTFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+
+
+	LUTShader->Use();
+
+	QuadRender->Draw();
+
+
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+	/*----------------------------------------------------
 		Part Obj
 	----------------------------------------------------*/
 
@@ -464,9 +510,9 @@ int main()
 
 		//RTShader->Use();
 		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, SSAOBlurBuffer->TexAttached);
+		//glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
 
-		//DebugQuadRender->Draw(false);
+		//QuadRender->Draw(false);
 
 
 		/*----------------------------------------------------
