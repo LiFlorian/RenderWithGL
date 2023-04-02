@@ -18,6 +18,8 @@ uniform vec3 lightColors[4];
 
 // Enviroment
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D BRDFLUT;
 
 uniform vec3 ViewPos;
 
@@ -62,12 +64,17 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 }
 
 // ----------------------------------------------------------------------------
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 // ----------------------------------------------------------------------------
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}   
+
 void main()
 {		
     vec3 N = normalize(Normal);
@@ -91,7 +98,7 @@ void main()
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness); // 法线分布函数
         float G   = GeometrySmith(N, V, L, roughness); // 几何函数
-        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0); // 反射函数, 不同方向, 所以返回值是vec3
+        vec3 F    = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0); // 反射函数, 不同方向, 所以返回值是vec3
         
         // 反射量计算
         vec3 numerator    = NDF * G * F; 
@@ -108,15 +115,29 @@ void main()
         // 对应光线的完整辐射率
         Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }   
-    
-    vec3 DiffuseKS = fresnelSchlick(max(dot(N, V), 0.0), F0);
-    vec3 DiffuseKd = 1.0 - DiffuseKS;
-    DiffuseKd *= 1.0 - metallic;
 
+    // IBL计算
+    vec3 F = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    
+    vec3 KS = F;
+    vec3 Kd = 1.0 - KS;
+    Kd *= 1.0 - metallic;
+
+    // IBL漫反射
     vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse = irradiance * albedo;
-    vec3 ambient = (DiffuseKd * diffuse) * ao;
 
+    // IBL镜面反射部分
+    // prefilter采样
+    vec3 R = reflect(-V, N);   
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+
+    // BRDFLUT采样部分
+    vec2 envBRDF  = texture(BRDFLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+
+    vec3 ambient = (Kd * diffuse + specular) * ao;
     vec3 color = ambient + Lo;
 
     // HDR映射

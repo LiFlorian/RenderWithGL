@@ -446,8 +446,14 @@ int main()
 
 		IBLShader->Use();
 		IBLShader->SetInt("irradianceMap", 0);
+		IBLShader->SetInt("prefilterMap", 1);
+		IBLShader->SetInt("BRDFLUT", 2);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, DiffuseConvoCubeMap->ID);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
 
 		IBLShader->SetVec3("ViewPos", CurCamera->Pos);
 		for (unsigned int i = 0; i < lightPositions.size(); ++i)
